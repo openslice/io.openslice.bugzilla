@@ -23,7 +23,6 @@ import java.util.Map;
 
 import javax.net.ssl.SSLContext;
 
-import org.apache.camel.CamelContext;
 import org.apache.camel.CamelExecutionException;
 import org.apache.camel.Exchange;
 import org.apache.camel.FluentProducerTemplate;
@@ -33,7 +32,6 @@ import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.http4.HttpClientConfigurer;
 import org.apache.camel.component.http4.HttpComponent;
-import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -45,100 +43,45 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContextBuilder;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.stereotype.Component;
 
 import io.openslice.bugzilla.model.Bug;
-import portal.api.repo.PortalRepository;
 
 /**
  * @author ctranoris
  *
  */
+@RefreshScope
+@Component
 public class BugzillaRouteBuilder extends RouteBuilder {
 
 	private static String BUGZILLAKEY = "";
-	private static String BUGZILLAURL = "portal.5ginfire.eu:443/bugzilla";
+	private static String BUGZILLAURL = "loclahost:443/bugzilla";
 	
-	
+
+	@Value("${myKey}")
+    private static String myKey;
 
 	private static final transient Log logger = LogFactory.getLog( BugzillaRouteBuilder.class.getName() );
 	
-
-	//private static ModelCamelContext actx;
-
-	public static void main(String[] args) throws Exception {
-		//new Main().run(args);
-		
-//		CamelContext context = new DefaultCamelContext();
-//		try {
-//			ConnectionFactory connectionFactory = new ActiveMQConnectionFactory("vm://localhost?broker.persistent=false&amp;broker.useJmx=true"); 
-//			context.addComponent("jms", ActiveMQComponent.jmsComponentAutoAcknowledge(connectionFactory));			
-//
-//			context.addRoutes( new BugzillaRouteBuilder() );
-//			context.start();
-			
-			//test new user
-//			FluentProducerTemplate template = context.createFluentProducerTemplate().to("seda:users.create?multipleConsumers=true");
-//			PortalUser owner = new PortalUser();
-//			owner.setEmail( "tranoris@example.org" );
-//			owner.setName( "Christos Tranoris");
-//			template.withBody( owner ).asyncSend();		
-//			
-//			// test New Deployment
-//			FluentProducerTemplate template = context.createFluentProducerTemplate().to("seda:deployments.create?multipleConsumers=true");
-//			String uuid = "02b0b0d9-d73a-451f-8cb2-79d398a375b4"; //UUID.randomUUID().toString();
-//			DeploymentDescriptor deployment = new DeploymentDescriptor( uuid , "An Experiment");
-//			deployment.setDescription("test asfdsf\n test asfdsf\n test asfdsf\n");
-//			PortalUser owner = new PortalUser();
-//			owner.setUsername( "admin" );
-//			owner.setEmail( "tranoris@ece.upatras.gr" );
-//			deployment.setOwner(owner);
-//			deployment.setDateCreated( new Date());
-//			deployment.setStartReqDate( new Date());
-//			deployment.setEndReqDate( new Date());
-//			ExperimentMetadata exper = new ExperimentMetadata();
-//			exper.setName( "An experiment NSD" ); 
-//			deployment.setExperiment(exper);
-//			template.withBody( deployment ).asyncSend();			
-//
-//            Thread.sleep(4000);
-//
-//			// test Update Deployment
-//			FluentProducerTemplate templateUpd = context.createFluentProducerTemplate().to("seda:deployments.update?multipleConsumers=true");
-//			//DeploymentDescriptor deployment = new DeploymentDescriptor( uuid, "An Experiment");
-//			//deployment.setDescription("test asfdsf\n test asfdsf\n test asfdsf\n");
-//			//PortalUser owner = new PortalUser();
-//			//owner.setUsername( "admin" );
-//			//owner.setEmail( "tranoris@ece.upatras.gr" );
-//			//deployment.setOwner(owner);
-//			//deployment.setDateCreated( new Date());
-//			//deployment.setStartReqDate( new Date());
-//			//deployment.setEndReqDate( new Date());
-//			
-//			deployment.setStatus( DeploymentDescriptorStatus.SCHEDULED );
-//			deployment.setStartDate(  new Date() );
-//			deployment.setEndDate(  new Date() );
-//			deployment.setFeedback( "A feedback\n more feedback " );			
-//			templateUpd.withBody( deployment ).asyncSend();
-//			
-//			
-//			
-//            Thread.sleep(60000);
-//		} finally {			
-//            context.stop();
-//        }
-		
-		
-	}
-
-	
 	public void configure() {
 
-		if (PortalRepository.getPropertyByName("bugzillaurl").getValue() != null) {
-			BUGZILLAURL = PortalRepository.getPropertyByName("bugzillaurl").getValue();
-		}
-		if (PortalRepository.getPropertyByName("bugzillakey").getValue() != null) {
-			BUGZILLAKEY = PortalRepository.getPropertyByName("bugzillakey").getValue();
-		}
+//		if (PortalRepository.getPropertyByName("bugzillaurl").getValue() != null) {
+//			BUGZILLAURL = PortalRepository.getPropertyByName("bugzillaurl").getValue();
+//		}
+//		if (PortalRepository.getPropertyByName("bugzillakey").getValue() != null) {
+//			BUGZILLAKEY = PortalRepository.getPropertyByName("bugzillakey").getValue();
+//		}
+		
+		logger.info("myKey=" + myKey);
+		System.out.println("Started " + myKey);
+		
+//		from("consul:kv?key=myKey&valueAsString=true")
+//        .to("log:camel-consul?level=INFO&showAll=true")
+//        .to("stream:out");
+		   
 		
 		if ( ( BUGZILLAURL == null ) || BUGZILLAURL.equals( "" ) ){
 			return; //no routing towards Bugzilla
@@ -257,9 +200,9 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 		 * Create VxF Validate New Route
 		 */
 		String jenkinsURL = null;
-		if (PortalRepository.getPropertyByName("jenkinsciurl").getValue() != null) {
-			jenkinsURL = PortalRepository.getPropertyByName("jenkinsciurl").getValue();
-		}
+//		if (PortalRepository.getPropertyByName("jenkinsciurl").getValue() != null) {
+//			jenkinsURL = PortalRepository.getPropertyByName("jenkinsciurl").getValue();
+//		}
 		if ( ( jenkinsURL != null ) && ( !jenkinsURL.equals( "" ) ) ){
 			from("seda:vxf.new.validation?multipleConsumers=true")
 			.delay(30000)			
