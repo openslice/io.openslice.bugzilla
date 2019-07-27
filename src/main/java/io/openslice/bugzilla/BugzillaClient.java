@@ -32,7 +32,7 @@ import io.openslice.bugzilla.model.User;
 //import portal.api.model.ExperimentMetadata;
 //import portal.api.model.ExperimentOnBoardDescriptor;
 //import portal.api.model.OnBoardingStatus;
-import portal.api.model.PortalUser;
+//import portal.api.model.PortalUser;
 //import portal.api.model.VFImage;
 //import portal.api.model.ValidationJob;
 //import portal.api.model.ValidationStatus;
@@ -61,21 +61,21 @@ public class BugzillaClient {
 
 
 		
-	public static User transformUser2BugzillaUser( final PortalUser portalUser ){
-		
-		//PortalUser portalUser = portalRepositoryRef.getUserByID(portaluserid);
-		User u = new User();
-		u.setEmail( portalUser.getEmail()  );
-		u.setFullName( portalUser.getName() );
-		u.setPassword( UUID.randomUUID().toString() ); //no password. The user needs to reset it in the other system (e.g. Bugzilla)
-		
-
-		logger.info( "In transformUser2BugzillaUser: portaluser getName = " + portalUser.getName() );
-		
-		
-		return u;
-		
-	}
+//	public static User transformUser2BugzillaUser( final PortalUser portalUser ){
+//		
+//		//PortalUser portalUser = portalRepositoryRef.getUserByID(portaluserid);
+//		User u = new User();
+//		u.setEmail( portalUser.getEmail()  );
+//		u.setFullName( portalUser.getName() );
+//		u.setPassword( UUID.randomUUID().toString() ); //no password. The user needs to reset it in the other system (e.g. Bugzilla)
+//		
+//
+//		logger.info( "In transformUser2BugzillaUser: portaluser getName = " + portalUser.getName() );
+//		
+//		
+//		return u;
+//		
+//	}
 	
 //	
 //	

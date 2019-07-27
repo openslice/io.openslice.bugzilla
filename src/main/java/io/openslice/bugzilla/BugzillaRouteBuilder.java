@@ -21,6 +21,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
 import javax.net.ssl.SSLContext;
 
 import org.apache.camel.CamelExecutionException;
@@ -45,6 +46,7 @@ import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
 import io.openslice.bugzilla.model.Bug;
@@ -53,6 +55,7 @@ import io.openslice.bugzilla.model.Bug;
  * @author ctranoris
  *
  */
+@Configuration
 @RefreshScope
 @Component
 public class BugzillaRouteBuilder extends RouteBuilder {
@@ -63,6 +66,24 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 
 	@Value("${myKey}")
     private static String myKey;
+	
+
+    @Value("${cassandra.host}")
+    private String cassandraHost;
+
+    @Value("${cassandra.user}")
+    private String userName;
+
+    @Value("${cassandra.password}")
+    private String password;
+
+    @PostConstruct
+    public void postConstruct() {
+        // to validate if properties are loaded
+        System.out.println("** cassandra.host: " + cassandraHost);
+        System.out.println("** cassandra.user: " + userName);
+        System.out.println("** cassandra.password: " + password);
+    }
 
 	private static final transient Log logger = LogFactory.getLog( BugzillaRouteBuilder.class.getName() );
 	
