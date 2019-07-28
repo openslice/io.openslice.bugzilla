@@ -9,8 +9,8 @@ spring:
       config:
         enabled: true
         prefix: config
-        defaultContext: application
-        data-key: mydata
+        defaultContext: openslice
+        data-key: osdata
         profileSeparator: '::'
         format: yaml
 

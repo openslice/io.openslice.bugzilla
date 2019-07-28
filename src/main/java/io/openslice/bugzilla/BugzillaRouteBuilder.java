@@ -59,27 +59,27 @@ import io.openslice.bugzilla.model.Bug;
 @RefreshScope
 @Component
 public class BugzillaRouteBuilder extends RouteBuilder {
+	
+	/**
+	 * In consul
+	 * Under config/openslice/osdata there will be a yml properties 
+	 * bugzilla:
+	 *   host: locahost:8080
+	 *   key: xxxxxxx
+	 */
 
-	private static String BUGZILLAKEY = "";
-	private static String BUGZILLAURL = "loclahost:443/bugzilla";
+    @Value("${bugzilla.host}")
+	private String BUGZILLAURL = "localhost:443/bugzilla";
+    @Value("${bugzilla.key}")
+	private String BUGZILLAKEY = "";
 	
 	
-
-    @Value("${cassandra.host}")
-    private String cassandraHost;
-
-    @Value("${cassandra.user}")
-    private String userName;
-
-    @Value("${cassandra.password}")
-    private String password;
 
     @PostConstruct
     public void postConstruct() {
         // to validate if properties are loaded
-        System.out.println("** cassandra.host: " + cassandraHost);
-        System.out.println("** cassandra.user: " + userName);
-        System.out.println("** cassandra.password: " + password);
+        System.out.println("** bugzilla.host: " + BUGZILLAURL);
+        System.out.println("** bugzilla.key: " + BUGZILLAKEY);
     }
 
 	private static final transient Log logger = LogFactory.getLog( BugzillaRouteBuilder.class.getName() );
