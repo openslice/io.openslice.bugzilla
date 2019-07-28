@@ -1,0 +1,22 @@
+
+# For Spring Actuator /info endpoint
+info:
+    artifact: bugzilla-client-service
+    name: bugzilla-client-service
+    description: Spring bugzilla-client-service
+    version: 1.0.0
+    
+    
+endpoints:
+  health:
+    sensitive: false
+  restart:
+    enabled: true
+  shutdown:
+    enabled: true
+
+logging:
+  level:
+    org.springframework.cloud.consul: DEBUG
+    org.apache.camel.zipkin: INFO
+    org.apache.camel.spring.cloud: INFO

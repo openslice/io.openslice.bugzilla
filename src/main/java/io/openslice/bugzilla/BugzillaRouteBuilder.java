@@ -63,9 +63,6 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 	private static String BUGZILLAKEY = "";
 	private static String BUGZILLAURL = "loclahost:443/bugzilla";
 	
-
-	@Value("${myKey}")
-    private static String myKey;
 	
 
     @Value("${cassandra.host}")
@@ -95,9 +92,6 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 //		if (PortalRepository.getPropertyByName("bugzillakey").getValue() != null) {
 //			BUGZILLAKEY = PortalRepository.getPropertyByName("bugzillakey").getValue();
 //		}
-		
-		logger.info("myKey=" + myKey);
-		System.out.println("Started " + myKey);
 		
 //		from("consul:kv?key=myKey&valueAsString=true")
 //        .to("log:camel-consul?level=INFO&showAll=true")
