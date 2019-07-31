@@ -19,7 +19,8 @@ logging:
   level:
     org.springframework.cloud.consul: DEBUG
     org.apache.camel.zipkin: INFO
-    org.apache.camel.spring.cloud: INFO
+    org.apache.camel.spring.cloud: DEBUG
+    org.apache.camel: DEBUG
     
 # Camel Service Call
 camel:
@@ -30,3 +31,12 @@ camel:
     server-service-mappings.[*]: bugzilla-client-service
     client-service-mappings.[*]: bugzilla-client-service
     include-message-body-streams: false
+    
+    
+spring:
+  activemq:
+    broker-url: tcp://localhost:61616
+    user: admin
+    password: admin
+    pool.enabled: true
+    pool.max-connections: 100

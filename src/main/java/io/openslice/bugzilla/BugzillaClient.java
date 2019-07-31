@@ -21,6 +21,10 @@ import java.util.UUID;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
 import io.openslice.bugzilla.model.Bug;
 import io.openslice.bugzilla.model.Comment;
@@ -32,63 +36,81 @@ import io.openslice.bugzilla.model.User;
 //import portal.api.model.ExperimentMetadata;
 //import portal.api.model.ExperimentOnBoardDescriptor;
 //import portal.api.model.OnBoardingStatus;
-//import portal.api.model.PortalUser;
+import io.openslice.model.PortalUser;
+
 //import portal.api.model.VFImage;
 //import portal.api.model.ValidationJob;
 //import portal.api.model.ValidationStatus;
 //import portal.api.model.VxFMetadata;
 //import portal.api.model.VxFOnBoardedDescriptor;
-//import portal.api.repo.PortalRepository;
 
+
+@Configuration
+@RefreshScope
 public class BugzillaClient {
 
 	private static final transient Log logger = LogFactory.getLog(BugzillaClient.class.getName());
 
 
-
-	/** */
-//	private static String BASE_SERVICE_URL = PortalRepository.getPropertyByName("maindomain").getValue();
-//	private static String PORTAL_TITLE = PortalRepository.getPropertyByName("portaltitle").getValue();
-
-
-
-//	private static final PortalRepository portalRepositoryRef = new PortalRepository();
-
-	/** */
-	private static final String BUGHEADER =   "*************************************************\n"
-											+ "THIS IS AN AUTOMATED ISSUE CREATED BY PORTAL API.\n"
-											+ "*************************************************\n";
-
-
-		
-//	public static User transformUser2BugzillaUser( final PortalUser portalUser ){
-//		
-//		//PortalUser portalUser = portalRepositoryRef.getUserByID(portaluserid);
-//		User u = new User();
-//		u.setEmail( portalUser.getEmail()  );
-//		u.setFullName( portalUser.getName() );
-//		u.setPassword( UUID.randomUUID().toString() ); //no password. The user needs to reset it in the other system (e.g. Bugzilla)
-//		
-//
-//		logger.info( "In transformUser2BugzillaUser: portaluser getName = " + portalUser.getName() );
-//		
-//		
-//		return u;
-//		
-//	}
+	@Value("${portal.title}")
+	private static String PORTAL_TITLE;
 	
-//	
-//	
-//	public static Bug transformNSInstantiation2BugBody(int deploymentdescriptorid) {
+	@Value("${portal.main_cfs_url}")
+	private static String MAIN_CFS_URL;
+
+
+	@Value("${issues.main_operations_product}")
+	private static String MAIN_OPERATIONS_PRODUCT;
+	
+	
+	/** */
+	private static final String BUGHEADER =   "THIS IS AN AUTOMATED ISSUE CREATED BY OPENSLICE SERVICES.\n"
+											+ "*********************************************************\n";
+
+
+	public static Comment createComment( String description ) {
+		
+		Comment c = new Comment();
+		c.setComment(description);
+		c.setIs_markdown( false );
+		c.setIs_private( false );	
+		return c;
+	}
+	
+	public static PortalUser getPortalUser() {
+		PortalUser u  = new PortalUser();
+		u.setName("kokos");
+		u.setEmail("lalalkis");
+		return u;
+	}
+		
+	public static User transformUser2BugzillaUser( final PortalUser portalUser ){
+		
+		//PortalUser portalUser = portalRepositoryRef.getUserByID(portaluserid);
+		User u = new User();
+		u.setEmail( portalUser.getEmail()  );
+		u.setFullName( portalUser.getName() );
+		u.setPassword( UUID.randomUUID().toString() ); //no password. The user needs to reset it in the other system (e.g. Bugzilla)
+		
+
+		logger.info( "In : portaluser getName = " + portalUser.getName() );
+		
+		
+		return u;
+		
+	}
+	
+	
+	
+//	public static Bug transformNSInstantiation2BugBody( DeploymentDescriptor descriptor ) {
 //		
-//		DeploymentDescriptor descriptor = portalRepositoryRef.getDeploymentByID(deploymentdescriptorid);
 //
-//		String product = PORTAL_TITLE + " Operations";
+//		String product = MAIN_OPERATIONS_PRODUCT;
 //		String component = "Operations Support" ;
 //		String summary = "[PORTAL] Deployment Request of NSD:" + descriptor.getExperiment().getName() + ",User: " + descriptor.getOwner().getUsername();
 //		String alias = descriptor.getUuid() ;
 //
-//		String description = getDeploymentDescription( deploymentdescriptorid );		
+//		String description = getDeploymentDescription( descriptor );		
 //		
 //		String status= "CONFIRMED";
 //		String resolution = null;
@@ -108,17 +130,16 @@ public class BugzillaClient {
 //		return b;		
 //	}
 //
-//	public static Bug transformNSTermination2BugBody(int deploymentdescriptorid) {
-//		logger.debug("transformNSTermination2BugBody("+deploymentdescriptorid+")");
-//		DeploymentDescriptor descriptor = portalRepositoryRef.getDeploymentByID(deploymentdescriptorid);
+//	public static Bug transformNSTermination2BugBody( DeploymentDescriptor descriptor ) {
+//
 //		logger.debug("transformNSTermination2BugBody"+descriptor.toString());
 //		
-//		String product = PORTAL_TITLE + " Operations";
+//		String product = MAIN_OPERATIONS_PRODUCT;
 //		String component = "Operations Support" ;
 //		String summary = "[PORTAL] Deployment Request of NSD:" + descriptor.getExperiment().getName() + ",User: " + descriptor.getOwner().getUsername();
 //		String alias = descriptor.getUuid() ;
 //
-//		String description = getDeploymentDescription( deploymentdescriptorid );		
+//		String description = getDeploymentDescription( descriptor );		
 //		
 //		String status= "CONFIRMED";
 //		String resolution = null;
@@ -137,16 +158,16 @@ public class BugzillaClient {
 //		
 //	}
 //		
-//	public static Bug transformNSDeletion2BugBody(int deploymentdescriptorid) {
+//	public static Bug transformNSDeletion2BugBody( DeploymentDescriptor descriptor ) {
 //
-//		DeploymentDescriptor descriptor = portalRepositoryRef.getDeploymentByID(deploymentdescriptorid);
+//
 //		
-//		String product = PORTAL_TITLE + " Operations";
+//		String product = MAIN_OPERATIONS_PRODUCT;
 //		String component = "Operations Support" ;
 //		String summary = "[PORTAL] Deployment Request of NSD:" + descriptor.getExperiment().getName() + ",User: " + descriptor.getOwner().getUsername();
 //		String alias = descriptor.getUuid() ;
 //
-//		String description = getDeploymentDescription( deploymentdescriptorid );		
+//		String description = getDeploymentDescription( descriptor );		
 //		
 //		String status= "CONFIRMED";
 //		String resolution = null;
@@ -164,17 +185,15 @@ public class BugzillaClient {
 //		
 //	}
 //		
-//	public static Bug transformDeployment2BugBody(int deploymentdescriptorid) {
-//		logger.debug("transformDeployment2BugBody("+deploymentdescriptorid+")");
-//		DeploymentDescriptor descriptor = portalRepositoryRef.getDeploymentByID(deploymentdescriptorid);
+//	public static Bug transformDeployment2BugBody( final DeploymentDescriptor descriptor) {
 //		logger.debug("transformDeployment2BugBody"+descriptor.toString());
 //		
-//		String product = PORTAL_TITLE + " Operations";
+//		String product = MAIN_OPERATIONS_PRODUCT;
 //		String component = "Operations Support" ;
 //		String summary = "[PORTAL] Deployment Request of NSD:" + descriptor.getExperiment().getName() + ",User: " + descriptor.getOwner().getUsername();
 //		String alias = descriptor.getUuid() ;
 //
-//		String description = getDeploymentDescription( deploymentdescriptorid );		
+//		String description = getDeploymentDescription( descriptor );		
 //		
 //		String status= "CONFIRMED";
 //		String resolution = null;
@@ -199,9 +218,9 @@ public class BugzillaClient {
 //	}
 //	
 //	
-//	public static Comment transformDeployment2BugComment(int deploymentdescriptorid) {
+//	public static Comment transformDeployment2BugComment(  DeploymentDescriptor descriptor ) {
 //		
-//		String description = getDeploymentDescription( deploymentdescriptorid );
+//		String description = getDeploymentDescription( descriptor );
 //				
 //		Comment b = createComment( description);
 //		
@@ -213,9 +232,8 @@ public class BugzillaClient {
 //	 * @param descriptor
 //	 * @return
 //	 */
-//	private static String getDeploymentDescription(int deploymentdescriptorid) {
+//	private static String getDeploymentDescription( DeploymentDescriptor descriptor ) {
 //
-//		DeploymentDescriptor descriptor = portalRepositoryRef.getDeploymentByID(deploymentdescriptorid);
 //		StringBuilder description =  new StringBuilder( BUGHEADER );
 //
 //		description.append( "\nSTATUS: " + descriptor.getStatus() + "\n");
@@ -255,19 +273,12 @@ public class BugzillaClient {
 //				
 //						 
 //		description.append( "\n*************************************************\n");
-//		description.append( "\nTo manage this Request, go to: " + BASE_SERVICE_URL + "/#!/edit_deployment/" + descriptor.getId() ); 
+//		description.append( "\nTo manage this Request, go to: " + MAIN_CFS_URL + "/#!/edit_deployment/" + descriptor.getId() ); 
 //		return description.toString();
 //	}
 //
 //
-	public static Comment createComment( String description ) {
-		
-		Comment c = new Comment();
-		c.setComment(description);
-		c.setIs_markdown( false );
-		c.setIs_private( false );	
-		return c;
-	}
+//
 //	
 //	
 //	/**
@@ -303,11 +314,10 @@ public class BugzillaClient {
 //
 //
 //
-//	public static Bug transformVxFValidation2BugBody(long vxfmetadataid) {
-//		VxFMetadata vxf = (VxFMetadata) portalRepositoryRef.getProductByID(vxfmetadataid);
+//	public static Bug transformVxFValidation2BugBody( VxFMetadata vxf  ) {
 //		
 //		logger.info( "In transformVxFValidation2BugBody: alias = " + vxf.getUuid());
-//		String product = PORTAL_TITLE + " Operations";
+//		String product = MAIN_OPERATIONS_PRODUCT;
 //		String component = "Validation" ;
 //		String summary = "[PORTAL] Validation Request for VxF:" + vxf.getName() + ", Owner: " + vxf.getOwner().getUsername();
 //		String alias = vxf.getUuid() ;
@@ -326,7 +336,7 @@ public class BugzillaClient {
 //
 //		description.append( "\n VDU Images: "    );
 //		for (VFImage img : vxf.getVfimagesVDU() ) {
-//			description.append( "\n\t Image: " + img.getName() + ", " + BASE_SERVICE_URL + "/#!/vfimage_view/" + img.getId()    );
+//			description.append( "\n\t Image: " + img.getName() + ", " + MAIN_CFS_URL + "/#!/vfimage_view/" + img.getId()    );
 //			
 //		}
 //
@@ -340,7 +350,7 @@ public class BugzillaClient {
 //		}
 //		 
 //		description.append( "\n\n*************************************************\n");
-//		description.append( "\nTo manage this , go to: " + BASE_SERVICE_URL + "/#!/vxf_edit/" + vxf.getId() ); 
+//		description.append( "\nTo manage this , go to: " + MAIN_CFS_URL + "/#!/vxf_edit/" + vxf.getId() ); 
 //		
 //		String status= "CONFIRMED";
 //		String resolution = null;
@@ -357,13 +367,12 @@ public class BugzillaClient {
 //		return b;
 //	}
 //	
-//	public static Bug transformVxFAutomaticOnBoarding2BugBody(int vxfobdid) {
+//	public static Bug transformVxFAutomaticOnBoarding2BugBody( VxFOnBoardedDescriptor vxfobd ) {
 //		
-//		VxFOnBoardedDescriptor vxfobd = portalRepositoryRef.getVxFOnBoardedDescriptorByID(vxfobdid);
 //		
 //		logger.info( "In transformVxFAutomaticOnBoarding2BugBody: alias = " + vxfobd.getUuid());
 //
-//		String product = PORTAL_TITLE + " Operations";
+//		String product = MAIN_OPERATIONS_PRODUCT;
 //		String component = "Onboarding" ;
 //		String summary = "[PORTAL] OSM OnBoarding Action for VxF:" + vxfobd.getVxf().getName() + ", Owner: " + vxfobd.getVxf().getOwner().getUsername();
 //		String alias = vxfobd.getUuid() ;
@@ -393,7 +402,7 @@ public class BugzillaClient {
 //		description.append( "\n Onboarding MANO provider: " + vxfobd.getObMANOprovider().getName() );
 //		 
 //		description.append( "\n\n*************************************************\n");
-//		description.append( "\nTo manage this , go to: " + BASE_SERVICE_URL + "/#!/vxf_edit/" + vxfobd.getVxf().getId() ); 
+//		description.append( "\nTo manage this , go to: " + MAIN_CFS_URL + "/#!/vxf_edit/" + vxfobd.getVxf().getId() ); 
 //		
 //		String status= "CONFIRMED";
 //		String resolution = null;
@@ -415,7 +424,7 @@ public class BugzillaClient {
 //	public static Bug transformNSDValidation2BugBody(ExperimentMetadata nsd) {
 //		logger.info( "In transformNSDValidation2BugBody: alias = " + nsd.getUuid());
 //
-//		String product = PORTAL_TITLE + " Operations";
+//		String product = MAIN_OPERATIONS_PRODUCT;
 //		String component = "Validation" ;
 //		String summary = "[PORTAL] Validation Request for NSD:" + nsd.getName() + ", Owner: " + nsd.getOwner().getUsername();
 //		String alias = nsd.getUuid() ;
@@ -437,7 +446,7 @@ public class BugzillaClient {
 //
 //		 
 //		description.append( "\n\n*************************************************\n");
-//		description.append( "\nTo manage this , go to: " + BASE_SERVICE_URL + "/#!/experiment_edit/" + nsd.getId() ); 
+//		description.append( "\nTo manage this , go to: " + MAIN_CFS_URL + "/#!/experiment_edit/" + nsd.getId() ); 
 //		
 //		String status= "CONFIRMED";
 //		String resolution = null;
@@ -457,12 +466,11 @@ public class BugzillaClient {
 //		return b;
 //	}
 //	
-//	public static Bug transformNSDAutomaticOnBoarding2BugBody(int uexpobdid) {
+//	public static Bug transformNSDAutomaticOnBoarding2BugBody( ExperimentOnBoardDescriptor uexpobd ) {
 //		
-//		ExperimentOnBoardDescriptor uexpobd = portalRepositoryRef.getExperimentOnBoardDescriptorByID(uexpobdid);
 //		logger.info( "In transformNSDAutomaticOnBoarding2BugBody: alias = " + uexpobd.getUuid());
 //		
-//		String product = PORTAL_TITLE + " Operations";
+//		String product = MAIN_OPERATIONS_PRODUCT;
 //		String component = "Onboarding" ;
 //		String summary = "[PORTAL] OSM OnBoarding Action for NSD:" + uexpobd.getExperiment().getName() + ", Owner: " + uexpobd.getExperiment().getOwner().getUsername();
 //		String alias = uexpobd.getUuid() ;
@@ -492,7 +500,7 @@ public class BugzillaClient {
 //		description.append( "\n Onboarding MANO provider: " + uexpobd.getObMANOprovider().getName() );
 //		 
 //		description.append( "\n\n*************************************************\n");
-//		description.append( "\nTo manage this , go to: " + BASE_SERVICE_URL + "/#!/experiment_edit/" + uexpobd.getExperiment().getId() ); 
+//		description.append( "\nTo manage this , go to: " + MAIN_CFS_URL + "/#!/experiment_edit/" + uexpobd.getExperiment().getId() ); 
 //		
 //		String status= "CONFIRMED";
 //		String resolution = null;
@@ -510,11 +518,11 @@ public class BugzillaClient {
 //	}
 //
 //	
-//	public static Bug transformVxFAutomaticOffBoarding2BugBody(int vxfobdid) {
-//		VxFOnBoardedDescriptor vxfobd = portalRepositoryRef.getVxFOnBoardedDescriptorByID(vxfobdid);
+//	public static Bug transformVxFAutomaticOffBoarding2BugBody( VxFOnBoardedDescriptor vxfobd ) {
+//
 //		logger.info( "In transformVxFAutomaticOnBoarding2BugBody: alias = " + vxfobd.getUuid());
 //
-//		String product = PORTAL_TITLE + " Operations";
+//		String product = MAIN_OPERATIONS_PRODUCT;
 //		String component = "Offboarding" ;
 //		String summary = "[PORTAL] OSM OffBoarding Action for VxF:" + vxfobd.getVxf().getName() + ", Owner: " + vxfobd.getVxf().getOwner().getUsername();
 //		String alias = vxfobd.getUuid() ;
@@ -541,7 +549,7 @@ public class BugzillaClient {
 //		description.append( "\n VxF OffBoarding Feedback: " + vxfobd.getFeedbackMessage()  );
 //		 
 //		description.append( "\n\n*************************************************\n");
-//		description.append( "\nTo manage this , go to: " + BASE_SERVICE_URL + "/#!/vxf_edit/" + vxfobd.getVxf().getId() ); 
+//		description.append( "\nTo manage this , go to: " + MAIN_CFS_URL + "/#!/vxf_edit/" + vxfobd.getVxf().getId() ); 
 //		
 //		String status= "CONFIRMED";
 //		String resolution = null;
@@ -558,9 +566,9 @@ public class BugzillaClient {
 //		return b;
 //	}
 //	
-//	public static Bug transformNSDAutomaticOffBoarding2BugBody(int uexpobdid) {
-//		ExperimentOnBoardDescriptor uexpobd = portalRepositoryRef.getExperimentOnBoardDescriptorByID(uexpobdid); 
-//		String product = PORTAL_TITLE + " Operations";
+//	public static Bug transformNSDAutomaticOffBoarding2BugBody( ExperimentOnBoardDescriptor uexpobd ) {
+//
+//		String product = MAIN_OPERATIONS_PRODUCT;
 //		String component = "Offboarding" ;
 //		String summary = "[PORTAL] OSM OffBoarding Action for NSD:" + uexpobd.getExperiment().getName() + ", Owner: " + uexpobd.getExperiment().getOwner().getUsername();
 //		String alias = uexpobd.getUuid() ;
@@ -587,7 +595,7 @@ public class BugzillaClient {
 //		description.append( "\n NSD OffBoarding Feedback: " + uexpobd.getFeedbackMessage()  );
 //		 
 //		description.append( "\n\n*************************************************\n");
-//		description.append( "\nTo manage this , go to: " + BASE_SERVICE_URL + "/#!/experiment_edit/" + uexpobd.getExperiment().getId() ); 
+//		description.append( "\nTo manage this , go to: " + MAIN_CFS_URL + "/#!/experiment_edit/" + uexpobd.getExperiment().getId() ); 
 //		
 //		String status= "CONFIRMED";
 //		String resolution = null;
@@ -605,7 +613,7 @@ public class BugzillaClient {
 //	}
 //
 //	public static Bug transformOSM4CommunicationFail2BugBody() {
-//		String product = PORTAL_TITLE + " Operations";
+//		String product = MAIN_OPERATIONS_PRODUCT;
 //		String component = "Operations Support" ;
 //		String summary = "[PORTAL] OSM Communication Action";
 //		
@@ -625,7 +633,7 @@ public class BugzillaClient {
 //	}
 //		
 //	public static Bug transformOSM4CommunicationSuccess2BugBody() {
-//		String product = PORTAL_TITLE + " Operations";
+//		String product = MAIN_OPERATIONS_PRODUCT;
 //		String component = "Operations Support" ;
 //		String summary = "[PORTAL] OSM Communication Action";
 //		
@@ -645,7 +653,7 @@ public class BugzillaClient {
 //	}
 //
 //	public static Bug transformOSM5CommunicationFail2BugBody() {
-//		String product = PORTAL_TITLE + " Operations";
+//		String product = MAIN_OPERATIONS_PRODUCT;
 //		String component = "Operations Support" ;
 //		String summary = "[PORTAL] OSM Communication Action";
 //		
@@ -665,7 +673,7 @@ public class BugzillaClient {
 //	}
 //		
 //	public static Bug transformOSM5CommunicationSuccess2BugBody() {
-//		String product = PORTAL_TITLE + " Operations";
+//		String product = MAIN_OPERATIONS_PRODUCT;
 //		String component = "Operations Support" ;
 //		String summary = "[PORTAL] OSM Communication Action";
 //		

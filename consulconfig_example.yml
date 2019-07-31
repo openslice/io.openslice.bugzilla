@@ -1,0 +1,8 @@
+portal:
+  name: MyOpenslice
+  main_cfs_url: localhost:13000/mp
+bugzilla:
+  host: https://portal.5ginfire.eu/bugstaging/
+  key: VH2Vw0iI5aYgALFFzVDWqhACwt6Hu3bXla9kSC1Z
+  main_operations_product: 5GinFIRE Operations
+  

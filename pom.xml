@@ -81,13 +81,40 @@
 		</dependency>
 		<!-- <dependency> <groupId>org.springframework.cloud</groupId> <artifactId>spring-cloud-starter-consul-discovery</artifactId> 
 			</dependency> -->
+
+
+		<!-- activeMQ -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-activemq</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.activemq</groupId>
+					<artifactId>activemq-broker</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+
 		<!-- Camel -->
 		<dependency>
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-spring-boot-starter</artifactId>
 		</dependency>
-
-
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-pool</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-activemq</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.activemq</groupId>
+					<artifactId>activemq-broker</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-service-starter</artifactId>
@@ -113,9 +140,18 @@
 			<artifactId>hibernate-validator</artifactId>
 			<version>5.2.4.Final</version>
 		</dependency>
-
-		<!-- <dependency> <groupId>io.openslice</groupId> <artifactId>io.openslice.portal.api</artifactId> 
-			<version>0.0.1-SNAPSHOT</version> </dependency> -->
+		<dependency>
+			<groupId>io.openslice</groupId>
+			<artifactId>io.openslice.model</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<!-- 
+		<dependency>
+			<groupId>io.openslice</groupId>
+			<artifactId>io.openslice.portal.api</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		 -->
 	</dependencies>
 
 	<build>
