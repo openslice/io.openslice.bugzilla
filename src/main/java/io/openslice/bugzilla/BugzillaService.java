@@ -10,6 +10,14 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 
 
+/**
+ * @author ctranoris
+ *
+ * based on
+ * https://github.com/apache/camel/tree/master/examples/camel-example-spring-boot-activemq
+ * https://github.com/indrabasak/spring-consul-example 
+ */
+
 @SpringBootApplication
 //@CamelZipkin
 @EnableDiscoveryClient
@@ -18,10 +26,6 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 @EnableAutoConfiguration
 @EnableConfigurationProperties
 public class BugzillaService {
-
-//https://stackoverflow.com/questions/47566338/not-able-to-read-configuration-from-consul-in-spring-boot-application
-	//https://github.com/indrabasak/spring-consul-example
-	
 	public static void main(String[] args) {		
 		SpringApplication.run( BugzillaService.class, args);
 	}

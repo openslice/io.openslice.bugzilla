@@ -94,6 +94,17 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-amqp</artifactId>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.qpid</groupId>
+					<artifactId>proton-j</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 
 
 		<!-- Camel -->
@@ -145,13 +156,7 @@
 			<artifactId>io.openslice.model</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
-		<!-- 
-		<dependency>
-			<groupId>io.openslice</groupId>
-			<artifactId>io.openslice.portal.api</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
-		 -->
+
 	</dependencies>
 
 	<build>

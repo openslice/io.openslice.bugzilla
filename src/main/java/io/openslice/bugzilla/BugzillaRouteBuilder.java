@@ -98,43 +98,43 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 		HttpComponent httpComponent = getContext().getComponent("https4", HttpComponent.class);
 		httpComponent.setHttpClientConfigurer(new MyHttpClientConfigurer());
 
-//		/**
-//		 * Create New Issue in Bugzilla. The body is a {@link Bug}
-//		 */
-//		from("direct:bugzilla.newIssue")
-//		.marshal().json( JsonLibrary.Jackson, true)
-//		.convertBodyTo( String.class ).to("stream:out")
-//		.errorHandler(deadLetterChannel("direct:dlq_bugzilla")
-//				.maximumRedeliveries( 4 ) //let's try for the next 120 mins to send it....
-//				.redeliveryDelay( 60000 ).useOriginalMessage()
-//				.deadLetterHandleNewException( false )
-//				//.logExhaustedMessageHistory(false)
-//				.logExhausted(true)
-//				.logHandled(true)
-//				//.retriesExhaustedLogLevel(LoggingLevel.WARN)
-//				.retryAttemptedLogLevel( LoggingLevel.WARN) )
-//		.setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.POST))
-//		.toD( "https4://" + BUGZILLAURL + "/rest.cgi/bug?api_key="+ BUGZILLAKEY +"&throwExceptionOnFailure=true")
-//		.to("stream:out");
-//		
-//		/**
-//		 * Update issue in bugzilla. The body is a {@link Bug}. header.uuid is used to select the bug
-//		 */
-//		from("direct:bugzilla.updateIssue")
-//		.marshal().json( JsonLibrary.Jackson, true)
-//		.convertBodyTo( String.class ).to("stream:out")
-//		.errorHandler(deadLetterChannel("direct:dlq_bugzilla")
-//				.maximumRedeliveries( 4 ) //let's try for the next 120 minutess to send it....
-//				.redeliveryDelay( 60000 ).useOriginalMessage()
-//				.deadLetterHandleNewException( false )
-//				//.logExhaustedMessageHistory(false)
-//				.logExhausted(true)
-//				.logHandled(true)
-//				//.retriesExhaustedLogLevel(LoggingLevel.WARN)
-//				.retryAttemptedLogLevel( LoggingLevel.WARN) )
-//		.setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.PUT))
-//		.toD( "https4://" + BUGZILLAURL + "/rest.cgi/bug/${header.uuid}?api_key="+ BUGZILLAKEY +"&throwExceptionOnFailure=true")
-//		.to("stream:out");
+		/**
+		 * Create New Issue in Bugzilla. The body is a {@link Bug}
+		 */
+		from("direct:bugzilla.newIssue")
+		.marshal().json( JsonLibrary.Jackson, true)
+		.convertBodyTo( String.class ).to("stream:out")
+		.errorHandler(deadLetterChannel("direct:dlq_bugzilla")
+				.maximumRedeliveries( 4 ) //let's try for the next 120 mins to send it....
+				.redeliveryDelay( 60000 ).useOriginalMessage()
+				.deadLetterHandleNewException( false )
+				//.logExhaustedMessageHistory(false)
+				.logExhausted(true)
+				.logHandled(true)
+				//.retriesExhaustedLogLevel(LoggingLevel.WARN)
+				.retryAttemptedLogLevel( LoggingLevel.WARN) )
+		.setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.POST))
+		.toD( "https4://" + BUGZILLAURL + "/rest.cgi/bug?api_key="+ BUGZILLAKEY +"&throwExceptionOnFailure=true")
+		.to("stream:out");
+		
+		/**
+		 * Update issue in bugzilla. The body is a {@link Bug}. header.uuid is used to select the bug
+		 */
+		from("direct:bugzilla.updateIssue")
+		.marshal().json( JsonLibrary.Jackson, true)
+		.convertBodyTo( String.class ).to("stream:out")
+		.errorHandler(deadLetterChannel("direct:dlq_bugzilla")
+				.maximumRedeliveries( 4 ) //let's try for the next 120 minutess to send it....
+				.redeliveryDelay( 60000 ).useOriginalMessage()
+				.deadLetterHandleNewException( false )
+				//.logExhaustedMessageHistory(false)
+				.logExhausted(true)
+				.logHandled(true)
+				//.retriesExhaustedLogLevel(LoggingLevel.WARN)
+				.retryAttemptedLogLevel( LoggingLevel.WARN) )
+		.setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.PUT))
+		.toD( "https4://" + BUGZILLAURL + "/rest.cgi/bug/${header.uuid}?api_key="+ BUGZILLAKEY +"&throwExceptionOnFailure=true")
+		.to("stream:out");
 		
 		
 		
@@ -148,313 +148,301 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 		.bean( BugzillaClient.class, "transformUser2BugzillaUser")
 		.marshal().json( JsonLibrary.Jackson,  true)
 		.convertBodyTo( String.class ).to("stream:out")
-		.errorHandler(deadLetterChannel("direct:dlq_users")
-				.maximumRedeliveries( 4 ) //let's try 10 times to send it....
-				.redeliveryDelay( 60000 ).useOriginalMessage()
-				.deadLetterHandleNewException( false )
-				//.logExhaustedMessageHistory(false)
-				.logExhausted(true)
-				.logHandled(true)
-				//.retriesExhaustedLogLevel(LoggingLevel.WARN)
-				.retryAttemptedLogLevel( LoggingLevel.WARN) )
+//		.errorHandler(deadLetterChannel("direct:dlq_users")
+//				.maximumRedeliveries( 4 ) //let's try 10 times to send it....
+//				.redeliveryDelay( 60000 ).useOriginalMessage()
+//				.deadLetterHandleNewException( false )
+//				//.logExhaustedMessageHistory(false)
+//				.logExhausted(true)
+//				.logHandled(true)
+//				//.retriesExhaustedLogLevel(LoggingLevel.WARN)
+//				.retryAttemptedLogLevel( LoggingLevel.WARN) )
 		.setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.POST))
 		.toD( "https4://" + BUGZILLAURL + "/rest.cgi/user?api_key="+ BUGZILLAKEY +"&throwExceptionOnFailure=true")
 		.to("stream:out");
 		
 		
-		from("timer://test?delay=10s&period=30000")
-		.bean( BugzillaClient.class, "getPortalUser")
-		.marshal().json( JsonLibrary.Jackson, true)
-		.convertBodyTo( String.class )
-		.to( "activemq:topic:users.create" );
+//		from("timer://test?delay=10s&period=30000")
+//		.bean( BugzillaClient.class, "getPortalUser")
+//		.marshal().json( JsonLibrary.Jackson, true)
+//		.convertBodyTo( String.class )
+//		.to( "activemq:topic:users.create" );
 		
-//		/**
-//		 * Create Deployment Route Issue
-//		 */
-//		from("activemq:topic:deployments.create")
-//		.bean( BugzillaClient.class, "transformDeployment2BugBody")
-//		.to("direct:bugzilla.newIssue");
-//				
-//		/**
-//		 * Update Deployment Route
-//		 */
-//		from("activemq:topic:deployments.update")
-//		.bean( BugzillaClient.class, "transformDeployment2BugBody")
-//		.process( BugHeaderExtractProcessor )
-//		.to("direct:bugzilla.updateIssue");
-//		
-//		
-//
-//		/**
-//		 * dead Letter Queue Users if everything fails to connect
-//		 */
+		/**
+		 * Create Deployment Route Issue
+		 */
+		from("activemq:topic:deployments.create")
+		.bean( BugzillaClient.class, "transformDeployment2BugBody")
+		.to("direct:bugzilla.newIssue");
+				
+		/**
+		 * Update Deployment Route
+		 */
+		from("activemq:topic:deployments.update")
+		.bean( BugzillaClient.class, "transformDeployment2BugBody")
+		.process( BugHeaderExtractProcessor )
+		.to("direct:bugzilla.updateIssue");
+		
+		
+
+		/**
+		 * dead Letter Queue Users if everything fails to connect
+		 */
 		from("direct:dlq_users")
 		.setBody()
 //		.body(DeploymentDescriptor.class)
 //		.bean( BugzillaClient.class, "transformDeployment2BugBody")
 		.body(String.class)
 		.to("stream:out");
-//		
-//		
-//		from("direct:bugzilla.bugmanage")
-//		.choice()
-//		.when( issueExists )
-//			.log( "Update ISSUE for ${body.alias} !" )		
-//			.process( BugHeaderExtractProcessor )
-//			.to("direct:bugzilla.updateIssue")
-//			.endChoice()
-//		.otherwise()
-//			.log( "New ISSUE for ${body.alias} !" )	
-//			.to("direct:bugzilla.newIssue")
-//			.endChoice();
-//		
-//		
-////		/**
-////		 * Create VxF Validate New Route
-////		 */
-////		String jenkinsURL = null;
-//////		if (PortalRepository.getPropertyByName("jenkinsciurl").getValue() != null) {
-//////			jenkinsURL = PortalRepository.getPropertyByName("jenkinsciurl").getValue();
-//////		}
-////		if ( ( jenkinsURL != null ) && ( !jenkinsURL.equals( "" ) ) ){
-////			from("activemq:topic:vxf.new.validation")
-////			.delay(30000)			
-////			.bean( BugzillaClient.class, "transformVxFValidation2BugBody")
-////			.to("direct:bugzilla.newIssue");
-////		}
-//		
-//		
-//	
-//		
-//		/**
-//		 * Update Validation Route
-//		 */
-//		from("activemq:topic:vxf.validationresult.update")
-//		.bean( BugzillaClient.class, "transformVxFValidation2BugBody")
-//		.to("direct:bugzilla.bugmanage");
-//		
-//		
+		
+		
+		from("direct:bugzilla.bugmanage")
+		.choice()
+		.when( issueExists )
+			.log( "Update ISSUE for ${body.alias} !" )		
+			.process( BugHeaderExtractProcessor )
+			.to("direct:bugzilla.updateIssue")
+			.endChoice()
+		.otherwise()
+			.log( "New ISSUE for ${body.alias} !" )	
+			.to("direct:bugzilla.newIssue")
+			.endChoice();
+		
+		
 //		/**
 //		 * Create VxF Validate New Route
 //		 */
-//		from("activemq:topic:vxf.onboard")
-//		.bean( BugzillaClient.class, "transformVxFAutomaticOnBoarding2BugBody")
-//		.to("direct:bugzilla.newIssue");
-//
-//		/**
-//		 * Create VxF OffBoard New Route
-//		 */
-//		from("activemq:topic:vxf.offboard")
-//		.bean( BugzillaClient.class, "transformVxFAutomaticOffBoarding2BugBody")
-//		.to("direct:bugzilla.bugmanage");
-//		
-//		/**
-//		 * Automatic OnBoarding Route Success
-//		 */		
-//		from("activemq:topic:vxf.onboard.success")
-//		.delay(30000)		
-//		.bean( BugzillaClient.class, "transformVxFAutomaticOnBoarding2BugBody")
-//		.process( BugHeaderExtractProcessor )
-//		.to("direct:bugzilla.updateIssue");
-//		//.to("direct:bugzilla.bugmanage");
-//		
-//
-//		/**
-//		 * Automatic OnBoarding Route Fail
-//		 */		
-//		from("activemq:topic:vxf.onboard.fail")
-//		.delay(30000)		
-//		.bean( BugzillaClient.class, "transformVxFAutomaticOnBoarding2BugBody")
-//		.process( BugHeaderExtractProcessor )
-//		.to("direct:bugzilla.updateIssue");
-//		//.to("direct:bugzilla.bugmanage");	
-//
-//		/**
-//		 * Automatic OnBoarding Route Result
-//		 */		
-//		from("activemq:topic:vxf.onboard.result")
-//		.delay(30000)		
-//		.bean( BugzillaClient.class, "transformVxFAutomaticOnBoarding2BugBody")
-//		.process( BugHeaderExtractProcessor )
-//		.to("direct:bugzilla.updateIssue");
-//		//.to("direct:bugzilla.bugmanage");	
-//		
-//		
-//		
-//		
-//		/**
-//		 * IMPORTANT NOTE: NSD ISSUE VALIDATION IS DISABLED FOR NOW
-//		 * SINCE THERE IS NO nsd VALIDATION!
-//		//Create NSD Validate New Route 
-//		from("activemq:topic:nsd.validate.new")
-//		.bean( BugzillaClient.class, "transformNSDValidation2BugBody")
-//		.to("direct:bugzilla.newIssue");
-//				
-//		//Create NSD Validation Update Route		 
-//		from("activemq:topic:nsd.validate.update")
-//		.bean( BugzillaClient.class, "transformNSDValidation2BugBody")
-//		.choice()
-//		.when( issueExists )
-//			.log( "Update ISSUE for validating ${body.alias} !" )		
-//			.process( BugHeaderExtractProcessor )
-//			.to("direct:bugzilla.updateIssue")
-//			.endChoice()
-//		.otherwise()
-//			.log( "New ISSUE for validating ${body.alias} !" )	
-//			.to("direct:bugzilla.newIssue")
-//			.endChoice();
-//
-//		 */
-//		
-//		/**
-//		 * Create NSD onboard New Route
-//		 */
-//		from("activemq:topic:nsd.onboard")
-//		.bean( BugzillaClient.class, "transformNSDAutomaticOnBoarding2BugBody")
-//		.to("direct:bugzilla.newIssue");
-//
-//		/**
-//		 * Create NSD offboard New Route
-//		 */
-//		from("activemq:topic:nsd.offboard")
-//		.bean( BugzillaClient.class, "transformNSDAutomaticOffBoarding2BugBody")
-//		.to("direct:bugzilla.bugmanage");
-//		
-//		/**
-//		 * Automatic OnBoarding Route Success
-//		 */		
-//		from("activemq:topic:nsd.onboard.success")
-//		.delay(30000)		
-//		.bean( BugzillaClient.class, "transformNSDAutomaticOnBoarding2BugBody")
-//		.process( BugHeaderExtractProcessor )
-//		.to("direct:bugzilla.updateIssue");
-//
-//		
-//		/**
-//		 * Automatic OnBoarding Route Fail
-//		 */		
-//		from("activemq:topic:nsd.onboard.fail")
-//		.delay(30000)		
-//		.bean( BugzillaClient.class, "transformNSDAutomaticOnBoarding2BugBody")
-//		.process( BugHeaderExtractProcessor )
-//		.to("direct:bugzilla.updateIssue");
-//
-//
-//		/**
-//		 * Automatic NS Instantiation Route Success
-//		 */		
-//		from("activemq:topic:nsd.deployment.instantiation.success")
-//		.delay(30000)		
-//		.bean( BugzillaClient.class, "transformNSInstantiation2BugBody")
-//		.to("direct:bugzilla.bugmanage");	
-//
-//		/**
-//		 * Automatic NS Termination Route Success
-//		 */		
-//		from("activemq:topic:nsd.deployment.termination.success")
-//		.delay(30000)		
-//		.bean( BugzillaClient.class, "transformNSInstantiation2BugBody")
-//		.to("direct:bugzilla.bugmanage");	
-//
-//		from("activemq:topic:nsd.deployment.termination.fail")
-//		.delay(30000)		
-//		.bean( BugzillaClient.class, "transformNSInstantiation2BugBody")
-//		.to("direct:bugzilla.bugmanage");	
-//
-//		/**
-//		 * OSM4 Communication
-//		 */		
-//		from("activemq:topic:communication.osm4.fail")
-//		.delay(30000)		
-//		.bean( BugzillaClient.class, "transformOSM4CommunicationFail2BugBody")
-//		.to("direct:bugzilla.bugmanage");
-//		
-//		from("activemq:topic:communication.osm4.success")
-//		.delay(30000)		
-//		.bean( BugzillaClient.class, "transformOSM4CommunicationSuccess2BugBody")
-//		.to("direct:bugzilla.bugmanage");
-//		
-//		/**
-//		 * OSM5 Communication
-//		 */		
-//		from("activemq:topic:communication.osm5.fail")
-//		.delay(30000)		
-//		.bean( BugzillaClient.class, "transformOSM5CommunicationFail2BugBody")
-//		.to("direct:bugzilla.bugmanage");
-//		
-//		from("activemq:topic:communication.osm5.success")
-//		.delay(30000)		
-//		.bean( BugzillaClient.class, "transformOSM5CommunicationSuccess2BugBody")
-//		.to("direct:bugzilla.bugmanage");
-//		
-//		/**
-//		 * NS Scheduling Route
-//		 */		
-//		from("activemq:topic:nsd.schedule")
-//		.delay(30000)		
-//		.bean( BugzillaClient.class, "transformNSInstantiation2BugBody")
-//		.to("direct:bugzilla.bugmanage");	
-//		
-//		/**
-//		 * Automatic NS Instantiation Route Fail
-//		 */		
-//		from("activemq:topic:nsd.deployment.instantiation.fail")
-//		.delay(30000)		
-//		.bean( BugzillaClient.class, "transformNSInstantiation2BugBody")
-//		.to("direct:bugzilla.bugmanage");	
-//				
-//		/**
-//		 * Automatic NS Termination Route Success
-//		 */		
-//		from("activemq:topic:nsd.instance.termination.success")
-//		.delay(30000)		
-//		.bean( BugzillaClient.class, "transformNSTermination2BugBody")
-//		.to("direct:bugzilla.bugmanage");	
-//
-//		/**
-//		 * Automatic NS Termination Route Fail
-//		 */		
-//		from("activemq:topic:nsd.instance.termination.fail")
-//		.delay(30000)		
-//		.bean( BugzillaClient.class, "transformNSTermination2BugBody")
-//		.to("direct:bugzilla.bugmanage");	
-//
-//		/**
-//		 * Automatic NS Deletion Route Success
-//		 */		
-//		from("activemq:topic:nsd.instance.deletion.success")
-//		.delay(30000)		
-//		.bean( BugzillaClient.class, "transformNSDeletion2BugBody")
-//		.to("direct:bugzilla.bugmanage");	
-//		
-//		/**
-//		 * Automatic NS Deletion Route Fail
-//		 */		
-//		from("activemq:topic:nsd.instance.deletion.fail")
-//		.delay(30000)		
-//		.bean( BugzillaClient.class, "transformNSDeletion2BugBody")
-//		.to("direct:bugzilla.bugmanage");	
-//		
-//		/**
-//		 * Reject Deployment Route Issue
-//		 */
-//		from("activemq:topic:nsd.deployment.reject")
-//		.delay(30000)		
-//		.bean( BugzillaClient.class, "transformDeployment2BugBody")
-//		.to("direct:bugzilla.bugmanage");		
-//
-//		from("direct:issue.get")
-//		.setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.GET))
-//		.toD( "https4://" + BUGZILLAURL + "/rest.cgi/bug/${header.uuid}?api_key="+ BUGZILLAKEY +"&throwExceptionOnFailure=true");
-//		
-//		
-//		/**
-//		 * dead Letter Queue if everything fails to connect
-//		 */
-//		from("direct:dlq_bugzilla")
-//		.setBody()
-//		.body(String.class)
-//		.to("stream:out");
+//		String jenkinsURL = null;
+////		if (PortalRepository.getPropertyByName("jenkinsciurl").getValue() != null) {
+////			jenkinsURL = PortalRepository.getPropertyByName("jenkinsciurl").getValue();
+////		}
+//		if ( ( jenkinsURL != null ) && ( !jenkinsURL.equals( "" ) ) ){
+//			from("activemq:topic:vxf.new.validation")
+//			.delay(30000)			
+//			.bean( BugzillaClient.class, "transformVxFValidation2BugBody")
+//			.to("direct:bugzilla.newIssue");
+//		}
+		
+		
+	
+		
+		/**
+		 * Update Validation Route
+		 */
+		from("activemq:topic:vxf.validationresult.update")
+		.bean( BugzillaClient.class, "transformVxFValidation2BugBody")
+		.to("direct:bugzilla.bugmanage");
+		
+		
+		/**
+		 * Create VxF Validate New Route
+		 */
+		from("activemq:topic:vxf.onboard")
+		.bean( BugzillaClient.class, "transformVxFAutomaticOnBoarding2BugBody")
+		.to("direct:bugzilla.newIssue");
+
+		/**
+		 * Create VxF OffBoard New Route
+		 */
+		from("activemq:topic:vxf.offboard")
+		.bean( BugzillaClient.class, "transformVxFAutomaticOffBoarding2BugBody")
+		.to("direct:bugzilla.bugmanage");
+		
+		/**
+		 * Automatic OnBoarding Route Success
+		 */		
+		from("activemq:topic:vxf.onboard.success")
+		.delay(30000)		
+		.bean( BugzillaClient.class, "transformVxFAutomaticOnBoarding2BugBody")
+		.process( BugHeaderExtractProcessor )
+		.to("direct:bugzilla.updateIssue");
+		//.to("direct:bugzilla.bugmanage");
+		
+
+		/**
+		 * Automatic OnBoarding Route Fail
+		 */		
+		from("activemq:topic:vxf.onboard.fail")
+		.delay(30000)		
+		.bean( BugzillaClient.class, "transformVxFAutomaticOnBoarding2BugBody")
+		.process( BugHeaderExtractProcessor )
+		.to("direct:bugzilla.updateIssue");
+		//.to("direct:bugzilla.bugmanage");	
+
+		/**
+		 * Automatic OnBoarding Route Result
+		 */		
+		from("activemq:topic:vxf.onboard.result")
+		.delay(30000)		
+		.bean( BugzillaClient.class, "transformVxFAutomaticOnBoarding2BugBody")
+		.process( BugHeaderExtractProcessor )
+		.to("direct:bugzilla.updateIssue");
+		//.to("direct:bugzilla.bugmanage");	
+		
+		
+		
+		
+		/**
+		 * IMPORTANT NOTE: NSD ISSUE VALIDATION IS DISABLED FOR NOW
+		 * SINCE THERE IS NO nsd VALIDATION!
+		//Create NSD Validate New Route 
+		from("activemq:topic:nsd.validate.new")
+		.bean( BugzillaClient.class, "transformNSDValidation2BugBody")
+		.to("direct:bugzilla.newIssue");
+				
+		//Create NSD Validation Update Route		 
+		from("activemq:topic:nsd.validate.update")
+		.bean( BugzillaClient.class, "transformNSDValidation2BugBody")
+		.choice()
+		.when( issueExists )
+			.log( "Update ISSUE for validating ${body.alias} !" )		
+			.process( BugHeaderExtractProcessor )
+			.to("direct:bugzilla.updateIssue")
+			.endChoice()
+		.otherwise()
+			.log( "New ISSUE for validating ${body.alias} !" )	
+			.to("direct:bugzilla.newIssue")
+			.endChoice();
+
+		 */
+		
+		/**
+		 * Create NSD onboard New Route
+		 */
+		from("activemq:topic:nsd.onboard")
+		.bean( BugzillaClient.class, "transformNSDAutomaticOnBoarding2BugBody")
+		.to("direct:bugzilla.newIssue");
+
+		/**
+		 * Create NSD offboard New Route
+		 */
+		from("activemq:topic:nsd.offboard")
+		.bean( BugzillaClient.class, "transformNSDAutomaticOffBoarding2BugBody")
+		.to("direct:bugzilla.bugmanage");
+		
+		/**
+		 * Automatic OnBoarding Route Success
+		 */		
+		from("activemq:topic:nsd.onboard.success")
+		.delay(30000)		
+		.bean( BugzillaClient.class, "transformNSDAutomaticOnBoarding2BugBody")
+		.process( BugHeaderExtractProcessor )
+		.to("direct:bugzilla.updateIssue");
+
+		
+		/**
+		 * Automatic OnBoarding Route Fail
+		 */		
+		from("activemq:topic:nsd.onboard.fail")
+		.delay(30000)		
+		.bean( BugzillaClient.class, "transformNSDAutomaticOnBoarding2BugBody")
+		.process( BugHeaderExtractProcessor )
+		.to("direct:bugzilla.updateIssue");
+
+
+		/**
+		 * Automatic NS Instantiation Route Success
+		 */		
+		from("activemq:topic:nsd.deployment.instantiation.success")
+		.delay(30000)		
+		.bean( BugzillaClient.class, "transformNSInstantiation2BugBody")
+		.to("direct:bugzilla.bugmanage");	
+
+		/**
+		 * Automatic NS Termination Route Success
+		 */		
+		from("activemq:topic:nsd.deployment.termination.success")
+		.delay(30000)		
+		.bean( BugzillaClient.class, "transformNSInstantiation2BugBody")
+		.to("direct:bugzilla.bugmanage");	
+
+		from("activemq:topic:nsd.deployment.termination.fail")
+		.delay(30000)		
+		.bean( BugzillaClient.class, "transformNSInstantiation2BugBody")
+		.to("direct:bugzilla.bugmanage");	
+
+				
+		/**
+		 * OSM5 Communication
+		 */		
+		from("activemq:topic:communication.osm.fail")
+		.delay(30000)		
+		.bean( BugzillaClient.class, "transformOSMCommunicationFail2BugBody")
+		.to("direct:bugzilla.bugmanage");
+		
+		from("activemq:topic:communication.osm5.success")
+		.delay(30000)		
+		.bean( BugzillaClient.class, "transformOSMCommunicationSuccess2BugBody")
+		.to("direct:bugzilla.bugmanage");
+		
+		/**
+		 * NS Scheduling Route
+		 */		
+		from("activemq:topic:nsd.schedule")
+		.delay(30000)		
+		.bean( BugzillaClient.class, "transformNSInstantiation2BugBody")
+		.to("direct:bugzilla.bugmanage");	
+		
+		/**
+		 * Automatic NS Instantiation Route Fail
+		 */		
+		from("activemq:topic:nsd.deployment.instantiation.fail")
+		.delay(30000)		
+		.bean( BugzillaClient.class, "transformNSInstantiation2BugBody")
+		.to("direct:bugzilla.bugmanage");	
+				
+		/**
+		 * Automatic NS Termination Route Success
+		 */		
+		from("activemq:topic:nsd.instance.termination.success")
+		.delay(30000)		
+		.bean( BugzillaClient.class, "transformNSTermination2BugBody")
+		.to("direct:bugzilla.bugmanage");	
+
+		/**
+		 * Automatic NS Termination Route Fail
+		 */		
+		from("activemq:topic:nsd.instance.termination.fail")
+		.delay(30000)		
+		.bean( BugzillaClient.class, "transformNSTermination2BugBody")
+		.to("direct:bugzilla.bugmanage");	
+
+		/**
+		 * Automatic NS Deletion Route Success
+		 */		
+		from("activemq:topic:nsd.instance.deletion.success")
+		.delay(30000)		
+		.bean( BugzillaClient.class, "transformNSDeletion2BugBody")
+		.to("direct:bugzilla.bugmanage");	
+		
+		/**
+		 * Automatic NS Deletion Route Fail
+		 */		
+		from("activemq:topic:nsd.instance.deletion.fail")
+		.delay(30000)		
+		.bean( BugzillaClient.class, "transformNSDeletion2BugBody")
+		.to("direct:bugzilla.bugmanage");	
+		
+		/**
+		 * Reject Deployment Route Issue
+		 */
+		from("activemq:topic:nsd.deployment.reject")
+		.delay(30000)		
+		.bean( BugzillaClient.class, "transformDeployment2BugBody")
+		.to("direct:bugzilla.bugmanage");		
+
+		from("direct:issue.get")
+		.setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.GET))
+		.toD( "https4://" + BUGZILLAURL + "/rest.cgi/bug/${header.uuid}?api_key="+ BUGZILLAKEY +"&throwExceptionOnFailure=true");
+		
+		
+		/**
+		 * dead Letter Queue if everything fails to connect
+		 */
+		from("direct:dlq_bugzilla")
+		.setBody()
+		.body(String.class)
+		.to("stream:out");
 //		
 	}
 
