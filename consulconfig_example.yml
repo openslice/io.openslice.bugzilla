@@ -3,6 +3,6 @@ portal:
   main_cfs_url: localhost:13000/mp
 bugzilla:
   host: portal.5ginfire.eu:443/bugstaging/
-  key: VH2Vw0iI5aYgALFFzVDWqhACwt6Hu3bXla9kSC1Z
+  key: VH2VZZZZ
   main_operations_product: 5GinFIRE Operations
   

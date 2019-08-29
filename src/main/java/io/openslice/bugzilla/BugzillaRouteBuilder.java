@@ -87,13 +87,13 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 	public void configure() {
 
 		
-		if ( ( BUGZILLAURL == null ) || BUGZILLAURL.equals( "" ) ){
-			return; //no routing towards Bugzilla
-		}
-		if ( ( BUGZILLAKEY == null ) || BUGZILLAKEY.equals( "" ) ){
-			return;//no routing towards Bugzilla
-		}
-		
+//		if ( ( BUGZILLAURL == null ) || BUGZILLAURL.equals( "" ) ){
+//			return; //no routing towards Bugzilla
+//		}
+//		if ( ( BUGZILLAKEY == null ) || BUGZILLAKEY.equals( "" ) ){
+//			return;//no routing towards Bugzilla
+//		}
+//		
 
 		HttpComponent httpComponent = getContext().getComponent("https4", HttpComponent.class);
 		httpComponent.setHttpClientConfigurer(new MyHttpClientConfigurer());
