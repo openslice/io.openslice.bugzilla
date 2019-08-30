@@ -68,9 +68,9 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 	 *   key: xxxxxxx
 	 */
 
-    @Value("${bugzilla.host}")
+    @Value("${bugzillaurl}")
 	private String BUGZILLAURL = "localhost:443/bugzilla";
-    @Value("${bugzilla.key}")
+    @Value("${bugzillakey}")
 	private String BUGZILLAKEY = "";
 	
 	
@@ -115,6 +115,7 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 				.retryAttemptedLogLevel( LoggingLevel.WARN) )
 		.setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.POST))
 		.toD( "https4://" + BUGZILLAURL + "/rest.cgi/bug?api_key="+ BUGZILLAKEY +"&throwExceptionOnFailure=true")
+		.to("log:DEBUG?showBody=true&showHeaders=true")
 		.to("stream:out");
 		
 		/**
@@ -134,6 +135,7 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 				.retryAttemptedLogLevel( LoggingLevel.WARN) )
 		.setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.PUT))
 		.toD( "https4://" + BUGZILLAURL + "/rest.cgi/bug/${header.uuid}?api_key="+ BUGZILLAKEY +"&throwExceptionOnFailure=true")
+		.to("log:DEBUG?showBody=true&showHeaders=true")
 		.to("stream:out");
 		
 		
@@ -238,6 +240,7 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 		 * Create VxF Validate New Route
 		 */
 		from("activemq:topic:vxf.onboard")
+		.unmarshal().json( JsonLibrary.Jackson, io.openslice.model.VxFOnBoardedDescriptor.class, true)
 		.bean( BugzillaClient.class, "transformVxFAutomaticOnBoarding2BugBody")
 		.to("direct:bugzilla.newIssue");
 
@@ -245,6 +248,7 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 		 * Create VxF OffBoard New Route
 		 */
 		from("activemq:topic:vxf.offboard")
+		.unmarshal().json( JsonLibrary.Jackson, io.openslice.model.VxFOnBoardedDescriptor.class, true)
 		.bean( BugzillaClient.class, "transformVxFAutomaticOffBoarding2BugBody")
 		.to("direct:bugzilla.bugmanage");
 		
@@ -252,6 +256,7 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 		 * Automatic OnBoarding Route Success
 		 */		
 		from("activemq:topic:vxf.onboard.success")
+		.unmarshal().json( JsonLibrary.Jackson, io.openslice.model.VxFOnBoardedDescriptor.class, true)
 		.delay(30000)		
 		.bean( BugzillaClient.class, "transformVxFAutomaticOnBoarding2BugBody")
 		.process( BugHeaderExtractProcessor )
@@ -263,22 +268,13 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 		 * Automatic OnBoarding Route Fail
 		 */		
 		from("activemq:topic:vxf.onboard.fail")
+		.unmarshal().json( JsonLibrary.Jackson, io.openslice.model.VxFOnBoardedDescriptor.class, true)
 		.delay(30000)		
 		.bean( BugzillaClient.class, "transformVxFAutomaticOnBoarding2BugBody")
 		.process( BugHeaderExtractProcessor )
 		.to("direct:bugzilla.updateIssue");
 		//.to("direct:bugzilla.bugmanage");	
 
-		/**
-		 * Automatic OnBoarding Route Result
-		 */		
-		from("activemq:topic:vxf.onboard.result")
-		.delay(30000)		
-		.bean( BugzillaClient.class, "transformVxFAutomaticOnBoarding2BugBody")
-		.process( BugHeaderExtractProcessor )
-		.to("direct:bugzilla.updateIssue");
-		//.to("direct:bugzilla.bugmanage");	
-		
 		
 		
 		

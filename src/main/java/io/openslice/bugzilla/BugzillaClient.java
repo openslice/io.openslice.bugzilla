@@ -15,16 +15,25 @@
 
 package io.openslice.bugzilla;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.camel.CamelContext;
+import org.apache.camel.FluentProducerTemplate;
+import org.apache.camel.ProducerTemplate;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
+
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.openslice.bugzilla.model.Bug;
 import io.openslice.bugzilla.model.Comment;
@@ -52,20 +61,30 @@ public class BugzillaClient {
 	private static final transient Log logger = LogFactory.getLog(BugzillaClient.class.getName());
 
 
-	@Value("${portal.title}")
-	private static String PORTAL_TITLE;
+	static CamelContext contxt;
+
+	@Value("${portaltitle}")
+	private String PORTAL_TITLE;
 	
-	@Value("${portal.main_cfs_url}")
-	private static String MAIN_CFS_URL;
+	@Value("${maindomain}")
+	private String MAIN_CFS_URL;
 
 
-	@Value("${issues.main_operations_product}")
-	private static String MAIN_OPERATIONS_PRODUCT;
+	@Value("${main_operations_product}")
+	private String MAIN_OPERATIONS_PRODUCT;
 	
 	
 	/** */
 	private static final String BUGHEADER =   "THIS IS AN AUTOMATED ISSUE CREATED BY OPENSLICE SERVICES.\n"
 											+ "*********************************************************\n";
+
+	
+	@Autowired
+	public void setActx(CamelContext actx) {
+		BugzillaClient.contxt = actx;
+		logger.info( "BugzillaClient configure() contxt = " + contxt);
+	}
+	
 
 
 	public static Comment createComment( String description ) {
@@ -102,7 +121,12 @@ public class BugzillaClient {
 	
 	
 	
-	public static Bug transformNSInstantiation2BugBody( DeploymentDescriptor descriptor ) {
+	public static long getVxFID(VxFOnBoardedDescriptor vxfobd ) {
+		return vxfobd.getId();
+	}
+	
+	
+	public Bug transformNSInstantiation2BugBody( DeploymentDescriptor descriptor ) {
 		
 
 		String product = MAIN_OPERATIONS_PRODUCT;
@@ -130,7 +154,7 @@ public class BugzillaClient {
 		return b;		
 	}
 
-	public static Bug transformNSTermination2BugBody( DeploymentDescriptor descriptor ) {
+	public Bug transformNSTermination2BugBody( DeploymentDescriptor descriptor ) {
 
 		logger.debug("transformNSTermination2BugBody"+descriptor.toString());
 		
@@ -158,7 +182,7 @@ public class BugzillaClient {
 		
 	}
 		
-	public static Bug transformNSDeletion2BugBody( DeploymentDescriptor descriptor ) {
+	public Bug transformNSDeletion2BugBody( DeploymentDescriptor descriptor ) {
 
 
 		
@@ -185,7 +209,7 @@ public class BugzillaClient {
 		
 	}
 		
-	public static Bug transformDeployment2BugBody( final DeploymentDescriptor descriptor) {
+	public Bug transformDeployment2BugBody( final DeploymentDescriptor descriptor) {
 		logger.debug("transformDeployment2BugBody"+descriptor.toString());
 		
 		String product = MAIN_OPERATIONS_PRODUCT;
@@ -218,7 +242,7 @@ public class BugzillaClient {
 	}
 	
 	
-	public static Comment transformDeployment2BugComment(  DeploymentDescriptor descriptor ) {
+	public Comment transformDeployment2BugComment(  DeploymentDescriptor descriptor ) {
 		
 		String description = getDeploymentDescription( descriptor );
 				
@@ -232,7 +256,7 @@ public class BugzillaClient {
 	 * @param descriptor
 	 * @return
 	 */
-	private static String getDeploymentDescription( DeploymentDescriptor descriptor ) {
+	private String getDeploymentDescription( DeploymentDescriptor descriptor ) {
 
 		StringBuilder description =  new StringBuilder( BUGHEADER );
 
@@ -290,7 +314,7 @@ public class BugzillaClient {
 	 * @param ccemail
 	 * @return
 	 */
-	public static Bug createBug(String product, String component, String summary, String alias, String description, String ccemail, String status, String resolution ) {
+	public Bug createBug(String product, String component, String summary, String alias, String description, String ccemail, String status, String resolution ) {
 		
 		Bug b = new Bug();
 		b.setProduct(product);
@@ -314,7 +338,7 @@ public class BugzillaClient {
 
 
 
-	public static Bug transformVxFValidation2BugBody( VxFMetadata vxf  ) {
+	public Bug transformVxFValidation2BugBody( VxFMetadata vxf  ) {
 		
 		logger.info( "In transformVxFValidation2BugBody: alias = " + vxf.getUuid());
 		String product = MAIN_OPERATIONS_PRODUCT;
@@ -367,10 +391,21 @@ public class BugzillaClient {
 		return b;
 	}
 	
-	public static Bug transformVxFAutomaticOnBoarding2BugBody( VxFOnBoardedDescriptor vxfobd ) {
+	public Bug transformVxFAutomaticOnBoarding2BugBody( final VxFOnBoardedDescriptor obd ) {
 		
+		VxFOnBoardedDescriptor vxfobd = obd;
 		
 		logger.info( "In transformVxFAutomaticOnBoarding2BugBody: alias = " + vxfobd.getUuid());
+		
+		
+		
+		VxFMetadata avxf = getVxFFromID( vxfobd.getVxfid() );
+				
+		if ( avxf==null ) {
+			logger.error( "Cannot retrieve VxF for vxf ID = " + vxfobd.getVxfid() );
+			return null;
+		}
+		vxfobd.setVxf(avxf);
 
 		String product = MAIN_OPERATIONS_PRODUCT;
 		String component = "Onboarding" ;
@@ -421,7 +456,33 @@ public class BugzillaClient {
 	
 		
 	
-	public static Bug transformNSDValidation2BugBody(ExperimentMetadata nsd) {
+	private VxFMetadata getVxFFromID(long vxfid) {
+		ProducerTemplate template = contxt.createProducerTemplate();
+		String ret = template
+				.requestBody( "activemq:queue:getVxFByID", vxfid , String.class);
+
+		VxFMetadata vxf;
+		try {
+			ObjectMapper mapper = new ObjectMapper();
+			vxf = mapper.readValue( ret, VxFMetadata.class);
+			return vxf;
+		} catch (JsonParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JsonMappingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}	
+		
+		
+		return null;
+	}
+
+
+	public Bug transformNSDValidation2BugBody(ExperimentMetadata nsd) {
 		logger.info( "In transformNSDValidation2BugBody: alias = " + nsd.getUuid());
 
 		String product = MAIN_OPERATIONS_PRODUCT;
@@ -466,7 +527,7 @@ public class BugzillaClient {
 		return b;
 	}
 	
-	public static Bug transformNSDAutomaticOnBoarding2BugBody( ExperimentOnBoardDescriptor uexpobd ) {
+	public  Bug transformNSDAutomaticOnBoarding2BugBody( ExperimentOnBoardDescriptor uexpobd ) {
 		
 		logger.info( "In transformNSDAutomaticOnBoarding2BugBody: alias = " + uexpobd.getUuid());
 		
@@ -518,7 +579,7 @@ public class BugzillaClient {
 	}
 
 	
-	public static Bug transformVxFAutomaticOffBoarding2BugBody( VxFOnBoardedDescriptor vxfobd ) {
+	public Bug transformVxFAutomaticOffBoarding2BugBody( VxFOnBoardedDescriptor vxfobd ) {
 
 		logger.info( "In transformVxFAutomaticOnBoarding2BugBody: alias = " + vxfobd.getUuid());
 
@@ -566,7 +627,7 @@ public class BugzillaClient {
 		return b;
 	}
 	
-	public static Bug transformNSDAutomaticOffBoarding2BugBody( ExperimentOnBoardDescriptor uexpobd ) {
+	public Bug transformNSDAutomaticOffBoarding2BugBody( ExperimentOnBoardDescriptor uexpobd ) {
 
 		String product = MAIN_OPERATIONS_PRODUCT;
 		String component = "Offboarding" ;
@@ -614,7 +675,7 @@ public class BugzillaClient {
 
 	
 
-	public static Bug transformOSMCommunicationFail2BugBody() {
+	public Bug transformOSMCommunicationFail2BugBody() {
 		String product = MAIN_OPERATIONS_PRODUCT;
 		String component = "Operations Support" ;
 		String summary = "[PORTAL] OSM Communication Action";
@@ -634,7 +695,7 @@ public class BugzillaClient {
 		return b;
 	}
 		
-	public static Bug transformOSMCommunicationSuccess2BugBody() {
+	public Bug transformOSMCommunicationSuccess2BugBody() {
 		String product = MAIN_OPERATIONS_PRODUCT;
 		String component = "Operations Support" ;
 		String summary = "[PORTAL] OSM Communication Action";
