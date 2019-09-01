@@ -86,6 +86,66 @@ public class BugzillaClient {
 	}
 	
 
+	/**
+	 * Request to the activeMQ channel to get VxF metadata
+	 * @param vxfid
+	 * @return
+	 */
+	private VxFMetadata getVxFFromID(long vxfid) {
+		ProducerTemplate template = contxt.createProducerTemplate();
+		String ret = template
+				.requestBody( "activemq:queue:getVxFByID", vxfid , String.class);
+
+		VxFMetadata vxf;
+		try {
+			ObjectMapper mapper = new ObjectMapper();
+			vxf = mapper.readValue( ret, VxFMetadata.class);
+			return vxf;
+		} catch (JsonParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JsonMappingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}	
+		
+		
+		return null;
+	}
+	
+	
+	/**
+	 * Request to the activeMQ channel to get VxF metadata
+	 * @param vxfid
+	 * @return
+	 */
+	private ExperimentMetadata getNSDFromID(long nsdid) {
+		ProducerTemplate template = contxt.createProducerTemplate();
+		String ret = template
+				.requestBody( "activemq:queue:getNSDByID", nsdid , String.class);
+
+		ExperimentMetadata nsd;
+		try {
+			ObjectMapper mapper = new ObjectMapper();
+			nsd = mapper.readValue( ret, ExperimentMetadata.class);
+			return nsd;
+		} catch (JsonParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JsonMappingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}	
+		
+		
+		return null;
+	}
 
 	public static Comment createComment( String description ) {
 		
@@ -117,12 +177,6 @@ public class BugzillaClient {
 		
 		return u;
 		
-	}
-	
-	
-	
-	public static long getVxFID(VxFOnBoardedDescriptor vxfobd ) {
-		return vxfobd.getId();
 	}
 	
 	
@@ -456,30 +510,7 @@ public class BugzillaClient {
 	
 		
 	
-	private VxFMetadata getVxFFromID(long vxfid) {
-		ProducerTemplate template = contxt.createProducerTemplate();
-		String ret = template
-				.requestBody( "activemq:queue:getVxFByID", vxfid , String.class);
-
-		VxFMetadata vxf;
-		try {
-			ObjectMapper mapper = new ObjectMapper();
-			vxf = mapper.readValue( ret, VxFMetadata.class);
-			return vxf;
-		} catch (JsonParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (JsonMappingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}	
-		
-		
-		return null;
-	}
+	
 
 
 	public Bug transformNSDValidation2BugBody(ExperimentMetadata nsd) {
@@ -527,9 +558,19 @@ public class BugzillaClient {
 		return b;
 	}
 	
-	public  Bug transformNSDAutomaticOnBoarding2BugBody( ExperimentOnBoardDescriptor uexpobd ) {
+	public  Bug transformNSDAutomaticOnBoarding2BugBody( ExperimentOnBoardDescriptor obd ) {
+		
+		ExperimentOnBoardDescriptor uexpobd = obd;
 		
 		logger.info( "In transformNSDAutomaticOnBoarding2BugBody: alias = " + uexpobd.getUuid());
+		ExperimentMetadata ansd = getNSDFromID( uexpobd.getExperimentid() );
+		
+		if ( ansd==null ) {
+			logger.error( "Cannot retrieve NSD for vxf ID = " + uexpobd.getExperimentid() );
+			return null;
+		}
+		uexpobd.setExperiment(ansd);
+		
 		
 		String product = MAIN_OPERATIONS_PRODUCT;
 		String component = "Onboarding" ;
@@ -579,10 +620,19 @@ public class BugzillaClient {
 	}
 
 	
-	public Bug transformVxFAutomaticOffBoarding2BugBody( VxFOnBoardedDescriptor vxfobd ) {
+	public Bug transformVxFAutomaticOffBoarding2BugBody( VxFOnBoardedDescriptor obd ) {
 
+
+		VxFOnBoardedDescriptor vxfobd = obd;
 		logger.info( "In transformVxFAutomaticOnBoarding2BugBody: alias = " + vxfobd.getUuid());
 
+		VxFMetadata avxf = getVxFFromID( vxfobd.getVxfid() );
+		if ( avxf==null ) {
+			logger.error( "Cannot retrieve VxF for vxf ID = " + vxfobd.getVxfid() );
+			return null;
+		}
+		vxfobd.setVxf(avxf);
+		
 		String product = MAIN_OPERATIONS_PRODUCT;
 		String component = "Offboarding" ;
 		String summary = "[PORTAL] OSM OffBoarding Action for VxF:" + vxfobd.getVxf().getName() + ", Owner: " + vxfobd.getVxf().getOwner().getUsername();
@@ -627,8 +677,18 @@ public class BugzillaClient {
 		return b;
 	}
 	
-	public Bug transformNSDAutomaticOffBoarding2BugBody( ExperimentOnBoardDescriptor uexpobd ) {
+	public Bug transformNSDAutomaticOffBoarding2BugBody( ExperimentOnBoardDescriptor obd ) {
 
+
+		ExperimentOnBoardDescriptor uexpobd = obd;
+		ExperimentMetadata ansd = getNSDFromID( uexpobd.getExperimentid() );
+		
+		if ( ansd==null ) {
+			logger.error( "Cannot retrieve NSD for vxf ID = " + uexpobd.getExperimentid() );
+			return null;
+		}
+		uexpobd.setExperiment(ansd);
+		
 		String product = MAIN_OPERATIONS_PRODUCT;
 		String component = "Offboarding" ;
 		String summary = "[PORTAL] OSM OffBoarding Action for NSD:" + uexpobd.getExperiment().getName() + ", Owner: " + uexpobd.getExperiment().getOwner().getUsername();
