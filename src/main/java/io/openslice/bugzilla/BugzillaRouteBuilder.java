@@ -170,20 +170,7 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 //		.convertBodyTo( String.class )
 //		.to( "activemq:topic:users.create" );
 		
-		/**
-		 * Create Deployment Route Issue
-		 */
-		from("activemq:topic:deployments.create")
-		.bean( BugzillaClient.class, "transformDeployment2BugBody")
-		.to("direct:bugzilla.newIssue");
-				
-		/**
-		 * Update Deployment Route
-		 */
-		from("activemq:topic:deployments.update")
-		.bean( BugzillaClient.class, "transformDeployment2BugBody")
-		.process( BugHeaderExtractProcessor )
-		.to("direct:bugzilla.updateIssue");
+		
 		
 		
 
@@ -232,6 +219,7 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 		 * Update Validation Route
 		 */
 		from("activemq:topic:vxf.validationresult.update")
+		.unmarshal().json( JsonLibrary.Jackson, io.openslice.model.ValidationStatus.class, true)
 		.bean( BugzillaClient.class, "transformVxFValidation2BugBody")
 		.to("direct:bugzilla.bugmanage");
 		
@@ -306,6 +294,7 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 		 * Create NSD onboard New Route
 		 */
 		from("activemq:topic:nsd.onboard")
+		.unmarshal().json( JsonLibrary.Jackson, io.openslice.model.ExperimentOnBoardDescriptor.class, true)
 		.bean( BugzillaClient.class, "transformNSDAutomaticOnBoarding2BugBody")
 		.to("direct:bugzilla.newIssue");
 
@@ -313,6 +302,7 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 		 * Create NSD offboard New Route
 		 */
 		from("activemq:topic:nsd.offboard")
+		.unmarshal().json( JsonLibrary.Jackson, io.openslice.model.ExperimentOnBoardDescriptor.class, true)
 		.bean( BugzillaClient.class, "transformNSDAutomaticOffBoarding2BugBody")
 		.to("direct:bugzilla.bugmanage");
 		
@@ -320,6 +310,7 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 		 * Automatic OnBoarding Route Success
 		 */		
 		from("activemq:topic:nsd.onboard.success")
+		.unmarshal().json( JsonLibrary.Jackson, io.openslice.model.ExperimentOnBoardDescriptor.class, true)
 		.delay(30000)		
 		.bean( BugzillaClient.class, "transformNSDAutomaticOnBoarding2BugBody")
 		.process( BugHeaderExtractProcessor )
@@ -330,6 +321,7 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 		 * Automatic OnBoarding Route Fail
 		 */		
 		from("activemq:topic:nsd.onboard.fail")
+		.unmarshal().json( JsonLibrary.Jackson, io.openslice.model.ExperimentOnBoardDescriptor.class, true)
 		.delay(30000)		
 		.bean( BugzillaClient.class, "transformNSDAutomaticOnBoarding2BugBody")
 		.process( BugHeaderExtractProcessor )
@@ -340,6 +332,7 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 		 * Automatic NS Instantiation Route Success
 		 */		
 		from("activemq:topic:nsd.deployment.instantiation.success")
+		.unmarshal().json( JsonLibrary.Jackson, io.openslice.model.DeploymentDescriptor.class, true)
 		.delay(30000)		
 		.bean( BugzillaClient.class, "transformNSInstantiation2BugBody")
 		.to("direct:bugzilla.bugmanage");	
@@ -348,16 +341,35 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 		 * Automatic NS Termination Route Success
 		 */		
 		from("activemq:topic:nsd.deployment.termination.success")
+		.unmarshal().json( JsonLibrary.Jackson, io.openslice.model.DeploymentDescriptor.class, true)
 		.delay(30000)		
 		.bean( BugzillaClient.class, "transformNSInstantiation2BugBody")
 		.to("direct:bugzilla.bugmanage");	
 
 		from("activemq:topic:nsd.deployment.termination.fail")
+		.unmarshal().json( JsonLibrary.Jackson, io.openslice.model.DeploymentDescriptor.class, true)
 		.delay(30000)		
 		.bean( BugzillaClient.class, "transformNSInstantiation2BugBody")
 		.to("direct:bugzilla.bugmanage");	
 
 				
+		/**
+		 * Create Deployment Route Issue
+		 */
+		from("activemq:topic:deployments.create")
+		.unmarshal().json( JsonLibrary.Jackson, io.openslice.model.DeploymentDescriptor.class, true)
+		.bean( BugzillaClient.class, "transformDeployment2BugBody")
+		.to("direct:bugzilla.newIssue");
+				
+		/**
+		 * Update Deployment Route
+		 */
+		from("activemq:topic:deployments.update")
+		.unmarshal().json( JsonLibrary.Jackson, io.openslice.model.DeploymentDescriptor.class, true)
+		.bean( BugzillaClient.class, "transformDeployment2BugBody")
+		.process( BugHeaderExtractProcessor )
+		.to("direct:bugzilla.updateIssue");
+		
 		/**
 		 * OSM5 Communication
 		 */		
@@ -375,6 +387,7 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 		 * NS Scheduling Route
 		 */		
 		from("activemq:topic:nsd.schedule")
+		.unmarshal().json( JsonLibrary.Jackson, io.openslice.model.DeploymentDescriptor.class, true)
 		.delay(30000)		
 		.bean( BugzillaClient.class, "transformNSInstantiation2BugBody")
 		.to("direct:bugzilla.bugmanage");	
@@ -383,6 +396,7 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 		 * Automatic NS Instantiation Route Fail
 		 */		
 		from("activemq:topic:nsd.deployment.instantiation.fail")
+		.unmarshal().json( JsonLibrary.Jackson, io.openslice.model.DeploymentDescriptor.class, true)
 		.delay(30000)		
 		.bean( BugzillaClient.class, "transformNSInstantiation2BugBody")
 		.to("direct:bugzilla.bugmanage");	
@@ -391,6 +405,7 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 		 * Automatic NS Termination Route Success
 		 */		
 		from("activemq:topic:nsd.instance.termination.success")
+		.unmarshal().json( JsonLibrary.Jackson, io.openslice.model.DeploymentDescriptor.class, true)
 		.delay(30000)		
 		.bean( BugzillaClient.class, "transformNSTermination2BugBody")
 		.to("direct:bugzilla.bugmanage");	
@@ -399,6 +414,7 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 		 * Automatic NS Termination Route Fail
 		 */		
 		from("activemq:topic:nsd.instance.termination.fail")
+		.unmarshal().json( JsonLibrary.Jackson, io.openslice.model.DeploymentDescriptor.class, true)
 		.delay(30000)		
 		.bean( BugzillaClient.class, "transformNSTermination2BugBody")
 		.to("direct:bugzilla.bugmanage");	
@@ -407,6 +423,7 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 		 * Automatic NS Deletion Route Success
 		 */		
 		from("activemq:topic:nsd.instance.deletion.success")
+		.unmarshal().json( JsonLibrary.Jackson, io.openslice.model.DeploymentDescriptor.class, true)
 		.delay(30000)		
 		.bean( BugzillaClient.class, "transformNSDeletion2BugBody")
 		.to("direct:bugzilla.bugmanage");	
@@ -415,6 +432,7 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 		 * Automatic NS Deletion Route Fail
 		 */		
 		from("activemq:topic:nsd.instance.deletion.fail")
+		.unmarshal().json( JsonLibrary.Jackson, io.openslice.model.DeploymentDescriptor.class, true)
 		.delay(30000)		
 		.bean( BugzillaClient.class, "transformNSDeletion2BugBody")
 		.to("direct:bugzilla.bugmanage");	
@@ -423,6 +441,7 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 		 * Reject Deployment Route Issue
 		 */
 		from("activemq:topic:nsd.deployment.reject")
+		.unmarshal().json( JsonLibrary.Jackson, io.openslice.model.DeploymentDescriptor.class, true)
 		.delay(30000)		
 		.bean( BugzillaClient.class, "transformDeployment2BugBody")
 		.to("direct:bugzilla.bugmanage");		
