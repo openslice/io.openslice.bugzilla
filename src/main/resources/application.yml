@@ -5,7 +5,9 @@ info:
     name: bugzilla-client-service
     description: Spring bugzilla-client-service
     version: 1.0.0
-    
+
+server:
+  port: 13010
     
 endpoints:
   health:
@@ -17,10 +19,10 @@ endpoints:
 
 logging:
   level:
-    org.springframework.cloud.consul: DEBUG
+    org.springframework.cloud.consul: INFO
     org.apache.camel.zipkin: INFO
-    org.apache.camel.spring.cloud: DEBUG
-    org.apache.camel: DEBUG
+    org.apache.camel.spring.cloud: INFO
+    org.apache.camel: INFO
     
 # Camel Service Call
 camel:
