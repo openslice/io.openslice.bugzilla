@@ -64,7 +64,7 @@ public class BugzillaClient {
 	static CamelContext contxt;
 
 	@Value("${portaltitle}")
-	private String PORTAL_TITLE;
+	private String PORTAL_TITLE = "";
 	
 	@Value("${maindomain}")
 	private String MAIN_CFS_URL;

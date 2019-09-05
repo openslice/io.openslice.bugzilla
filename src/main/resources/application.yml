@@ -9,13 +9,6 @@ info:
 server:
   port: 13010
     
-endpoints:
-  health:
-    sensitive: false
-  restart:
-    enabled: true
-  shutdown:
-    enabled: true
 
 logging:
   level:
@@ -36,10 +29,38 @@ camel:
     
     
 spring:
+  profiles: default
+  application:
+    name: bugzilla-client-service
+  cloud:
+    consul:
+      enabled: true
+      host: http://localhost:8500
+      port: 8500
+      config:
+        enabled: true
+        prefix: config
+        defaultContext: openslice
+        data-key: osdata
+        profileSeparator: '::'
+        format: yaml
+      discovery:        
+        tags: openslice-microservice
+        enabled: true
+        instanceId: ${spring.application.name}:${vcap.application.instance_id:${spring.application.instance_id:${random.value}}}
+        healthCheckInterval: 120s
+      
   activemq:
-    broker-url: tcp://localhost:61616
+    brokerUrl: tcp://localhost:61616
     user: admin
     password: admin
     pool:
       enabled: true
       max-connections: 100
+      
+portaltitle: "openslice"
+maindomain: "http://localhost:13000"
+main_operations_product: "Openslice Operations"
+bugzillaurl: "bugzilla.example.org:443/bugstaging/"
+bugzillakey: ""
+
