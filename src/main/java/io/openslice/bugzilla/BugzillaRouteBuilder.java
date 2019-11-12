@@ -508,7 +508,7 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 		    
 		    exchange.getOut().setBody( aBug  );
 		    // copy attachements from IN to OUT to propagate them
-		    exchange.getOut().setAttachments(exchange.getIn().getAttachments());
+		    //exchange.getOut().setAttachments(exchange.getIn().getAttachments());
 			
 		}
 	};
