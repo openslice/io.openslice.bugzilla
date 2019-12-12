@@ -255,7 +255,24 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 		.unmarshal().json( JsonLibrary.Jackson, ServiceOrderCreateNotification.class, true)
 		.bean( BugzillaClient.class, "transformNotification2BugBody")
 		.to("direct:bugzilla.newIssue");
-	
+
+		from( EVENT_SERVICE_ORDER_ATTRIBUTE_VALUE_CHANGED )
+		.unmarshal().json( JsonLibrary.Jackson, ServiceOrderCreateNotification.class, true)
+		.bean( BugzillaClient.class, "transformNotification2BugBody")
+		.to("direct:bugzilla.newIssue");
+		
+		from( EVENT_SERVICE_ORDER_DELETE )
+		.unmarshal().json( JsonLibrary.Jackson, ServiceOrderCreateNotification.class, true)
+		.bean( BugzillaClient.class, "transformNotification2BugBody")
+		.to("direct:bugzilla.newIssue");
+		
+		from( EVENT_SERVICE_ORDER_STATE_CHANGED )
+		.unmarshal().json( JsonLibrary.Jackson, ServiceOrderCreateNotification.class, true)
+		.bean( BugzillaClient.class, "transformNotification2BugBody")
+		.to("direct:bugzilla.newIssue");
+
+		
+		
 		
 		/**
 		 * Update Validation Route

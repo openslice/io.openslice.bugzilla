@@ -802,7 +802,16 @@ public class BugzillaClient {
 		if ( n instanceof ServiceOrderCreateNotification) {
 			so = ((ServiceOrderCreateNotification)n).getEvent().getServiceOrder();
 			logger.debug("ServiceOrder=" + so.toString());
-		} 
+		}else if ( n instanceof ServiceOrderStateChangeNotification ) {
+			so = ((ServiceOrderStateChangeNotification)n).getEvent().getServiceOrder();
+			logger.debug("ServiceOrder=" + so.toString());
+		} else if ( n instanceof ServiceOrderAttributeValueChangeNotification ) {
+			so = ((ServiceOrderAttributeValueChangeNotification)n).getEvent().getServiceOrder();
+			logger.debug("ServiceOrder=" + so.toString());
+		} else if ( n instanceof ServiceOrderDeleteNotification ) {
+			so = ((ServiceOrderAttributeValueChangeNotification)n).getEvent().getServiceOrder();
+			logger.debug("ServiceOrder=" + so.toString());
+		}  
 //		else if ( n instanceof ServiceOrderStateChangeNotification) {
 //			 msgtopic = EVENT_SERVICE_ORDER_STATE_CHANGED;				
 //		} else if ( n instanceof ServiceOrderDeleteNotification) {
