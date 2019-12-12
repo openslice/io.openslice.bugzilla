@@ -57,6 +57,14 @@ import io.openslice.model.ValidationJob;
 import io.openslice.model.ValidationStatus;
 import io.openslice.model.VxFMetadata;
 import io.openslice.model.VxFOnBoardedDescriptor;
+import io.openslice.tmf.common.model.Notification;
+import io.openslice.tmf.prm669.model.RelatedParty;
+import io.openslice.tmf.so641.model.ServiceOrder;
+import io.openslice.tmf.so641.model.ServiceOrderAttributeValueChangeNotification;
+import io.openslice.tmf.so641.model.ServiceOrderCreateNotification;
+import io.openslice.tmf.so641.model.ServiceOrderDeleteNotification;
+import io.openslice.tmf.so641.model.ServiceOrderStateChangeNotification;
+import io.openslice.tmf.so641.model.ServiceOrderStateType;
 
 
 
@@ -783,6 +791,105 @@ public class BugzillaClient {
 		
 		Bug b = createBug(product, component, summary, IMANOCommunicationStatus.getOsmCommunicationStatusUUID(), description.toString(), null, status, resolution);
 		return b;
+	}
+	
+	
+	public Bug transformNotification2BugBody( final Notification n) {
+		logger.debug("transformNotification2BugBody"+n.toString());
+		
+		ServiceOrder so = null;
+		String status= "CONFIRMED";
+		if ( n instanceof ServiceOrderCreateNotification) {
+			so = ((ServiceOrderCreateNotification)n).getEvent().getServiceOrder();
+			logger.debug("ServiceOrder=" + so.toString());
+		} 
+//		else if ( n instanceof ServiceOrderStateChangeNotification) {
+//			 msgtopic = EVENT_SERVICE_ORDER_STATE_CHANGED;				
+//		} else if ( n instanceof ServiceOrderDeleteNotification) {
+//			 msgtopic = EVENT_SERVICE_ORDER_DELETE;				
+//		} else if ( n instanceof ServiceOrderAttributeValueChangeNotification) {
+//			 msgtopic = EVENT_SERVICE_ORDER_ATTRIBUTE_VALUE_CHANGED;				
+//		}
+		if (so == null) {
+			return null;
+		}
+		String alias = so.getUuid() ;
+		String product = MAIN_OPERATIONS_PRODUCT;
+		String component = "Operations Support" ;
+		String summary = "[PORTAL] Service Order:" + alias  ;
+		
+
+		String description = getServiceOrderDescription( so );		
+		
+		String resolution = null;
+		if ( ( so.getState().equals( ServiceOrderStateType.INPROGRESS )) || 
+				so.getState().equals( ServiceOrderStateType.HELD ) || 
+		so.getState().equals( ServiceOrderStateType.PARTIAL ) || 
+		so.getState().equals( ServiceOrderStateType.PENDING )) {
+			status = "IN_PROGRESS";			
+		} else  if ( so.getState().equals( ServiceOrderStateType.COMPLETED ) ) {
+			status = "RESOLVED";
+			resolution = "FIXED";
+		} else if ( ( so.getState().equals( ServiceOrderStateType.REJECTED )) || 
+				( so.getState().equals( ServiceOrderStateType.FAILED ) )) {
+			status = "RESOLVED";
+			resolution = "INVALID";
+		}
+		
+		RelatedParty pr = so.getOrderRequester();
+		String email = "tranoris@ece.upatras.gr";
+		Bug b = createBug(product, component, summary, alias, description, email, status, resolution);
+				
+		return b;
+	}
+	
+	/**
+	 * @param descriptor
+	 * @return
+	 */
+	private String getServiceOrderDescription( ServiceOrder so ) {
+
+		StringBuilder description =  new StringBuilder( BUGHEADER );
+
+		description.append( "\n" + so.toString() + "\n");
+//		if ( descriptor.getStartDate() != null ) {
+//			description.append( "\nFeedback: " + descriptor.getFeedback() );
+//			description.append("\nScheduled Start Date: " + descriptor.getStartDate().toString() );
+//			description.append( "\nScheduled End Date: " + descriptor.getEndDate().toString() );
+//		} else {
+//			description.append( "\nNOT YET SCHEDULED \n");			
+//		}
+//		
+//		
+//		description.append(
+//						"\nDeployment Request by user :" + descriptor.getOwner().getUsername() 
+//						+"\nHere are the details:\n"
+//						+ "\nExperiment name: " + descriptor.getName() 
+//						+ "\nDescription: " + descriptor.getDescription() 
+//						+ "\nDate Created: " + descriptor.getDateCreated().toString() 
+//						+ "\nRequested Tentative Start date: " + descriptor.getStartReqDate().toString() 
+//						+ "\nRequested Tentative End date: " + descriptor.getEndReqDate().toString() 
+//						+ "\nExperiment (NSD) requested: " + descriptor.getExperiment().getName() );
+//		
+//		
+//		if ( descriptor.getMentor() != null ) {
+//			description.append( "\nMentor: " + descriptor.getMentor().getName() + ", " + descriptor.getMentor().getOrganization() ) ;
+//		}
+//		
+//
+//		description.append( "\nConstituent VxF Placement " ) ;
+//		for (DeploymentDescriptorVxFPlacement pl : descriptor.getVxfPlacements()) {
+//			if (  ( pl.getConstituentVxF().getVxfref() != null ) && ( pl.getInfrastructure() != null )) {
+//				description.append( "\n  Constituent VxF: " + pl.getConstituentVxF().getVxfref().getName() + " - Infrastructure: " + pl.getInfrastructure().getName() );
+//			}
+//		}
+		
+		
+				
+						 
+		description.append( "\n*************************************************\n");
+		description.append( "\nTo manage this Request, go to: " + MAIN_CFS_URL + "/services/service_order/" + so.getId() ); 
+		return description.toString();
 	}
 		
 }

@@ -56,6 +56,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
 import io.openslice.bugzilla.model.Bug;
+import io.openslice.tmf.so641.model.ServiceOrderCreateNotification;
 
 /**
  * @author ctranoris
@@ -83,7 +84,30 @@ public class BugzillaRouteBuilder extends RouteBuilder {
     @Value("${bugzillakey}")
 	private String BUGZILLAKEY = "";
 	
+	@Value("${EVENT_SERVICE_ORDER_CREATE}")
+	private String EVENT_SERVICE_ORDER_CREATE = "";
 	
+	@Value("${EVENT_SERVICE_ORDER_STATE_CHANGED}")
+	private String EVENT_SERVICE_ORDER_STATE_CHANGED = "";
+	
+	@Value("${EVENT_SERVICE_ORDER_DELETE}")
+	private String EVENT_SERVICE_ORDER_DELETE = "";
+	
+	@Value("${EVENT_SERVICE_ORDER_ATTRIBUTE_VALUE_CHANGED}")
+	private String EVENT_SERVICE_ORDER_ATTRIBUTE_VALUE_CHANGED = "";
+
+
+	@Value("${EVENT_SERVICE_CREATE}")
+	private String EVENT_SERVICE_CREATE = "";
+	
+	@Value("${EVENT_SERVICE_STATE_CHANGED}")
+	private String EVENT_SERVICE_STATE_CHANGED = "";
+	
+	@Value("${EVENT_SERVICE_DELETE}")
+	private String EVENT_SERVICE_DELETE = "";
+	
+	@Value("${EVENT_SERVICE_ATTRIBUTE_VALUE_CHANGED}")
+	private String EVENT_SERVICE_ATTRIBUTE_VALUE_CHANGED = "";
 
     @PostConstruct
     public void postConstruct() {
@@ -222,7 +246,15 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 //			.to("direct:bugzilla.newIssue");
 //		}
 		
+		/**
+		 * Service Order Topics
+		 */
 		
+		
+		from( EVENT_SERVICE_ORDER_CREATE )
+		.unmarshal().json( JsonLibrary.Jackson, ServiceOrderCreateNotification.class, true)
+		.bean( BugzillaClient.class, "transformNotification2BugBody")
+		.to("direct:bugzilla.newIssue");
 	
 		
 		/**

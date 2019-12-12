@@ -149,6 +149,11 @@
 		</dependency>
 		<dependency>
 			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-http-common</artifactId>
+			<version>3.0.0-M4</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-stream</artifactId>
 		</dependency>
 		<dependency>
@@ -159,10 +164,21 @@
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-validator</artifactId>
 			<version>5.2.4.Final</version>
+		</dependency>		
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
 		</dependency>
+		
+		<!-- models -->
 		<dependency>
 			<groupId>io.openslice</groupId>
 			<artifactId>io.openslice.model</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.openslice</groupId>
+			<artifactId>io.openslice.tmf.api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
