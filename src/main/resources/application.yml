@@ -16,7 +16,7 @@ logging:
     org.springframework.cloud.consul: INFO
     org.apache.camel.zipkin: INFO
     org.apache.camel.spring.cloud: INFO
-    org.apache.camel: DEBUG
+    org.apache.camel: INFO
     
 # Camel Service Call
 camel:
