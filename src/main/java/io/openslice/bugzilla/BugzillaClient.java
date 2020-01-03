@@ -894,7 +894,8 @@ public class BugzillaClient {
 			description.append( "\n\t Action: " + soi.getAction()  );
 			description.append( "\n\t State: " + soi.getState()  );
 			description.append( "\n\t ** Service Details **"  );
-			description.append( "\n\t - Service Specification Name: " + soi.getService().getServiceSpecification().getName()  );
+			description.append( "\n\t - Service Specification Name: " );
+			description.append( "\n\t - <b>" + soi.getService().getServiceSpecification().getName() +"</b>" );
 			description.append( "\n\t - Service Specification Version: " + soi.getService().getServiceSpecification().getVersion()  );
 			description.append( "\n\t - Service State: " + soi.getService().getState()   );
 			description.append( "\n\t - Service Name: " + soi.getService().getName()    );
