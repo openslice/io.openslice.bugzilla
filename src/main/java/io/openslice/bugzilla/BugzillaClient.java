@@ -58,11 +58,15 @@ import io.openslice.model.ValidationStatus;
 import io.openslice.model.VxFMetadata;
 import io.openslice.model.VxFOnBoardedDescriptor;
 import io.openslice.tmf.common.model.Notification;
+import io.openslice.tmf.common.model.service.Characteristic;
+import io.openslice.tmf.common.model.service.Note;
+import io.openslice.tmf.common.model.service.ServiceRef;
 import io.openslice.tmf.prm669.model.RelatedParty;
 import io.openslice.tmf.so641.model.ServiceOrder;
 import io.openslice.tmf.so641.model.ServiceOrderAttributeValueChangeNotification;
 import io.openslice.tmf.so641.model.ServiceOrderCreateNotification;
 import io.openslice.tmf.so641.model.ServiceOrderDeleteNotification;
+import io.openslice.tmf.so641.model.ServiceOrderItem;
 import io.openslice.tmf.so641.model.ServiceOrderStateChangeNotification;
 import io.openslice.tmf.so641.model.ServiceOrderStateType;
 
@@ -860,38 +864,51 @@ public class BugzillaClient {
 
 		StringBuilder description =  new StringBuilder( BUGHEADER );
 
-		description.append( "\n" + so.toString() + "\n");
-//		if ( descriptor.getStartDate() != null ) {
-//			description.append( "\nFeedback: " + descriptor.getFeedback() );
-//			description.append("\nScheduled Start Date: " + descriptor.getStartDate().toString() );
-//			description.append( "\nScheduled End Date: " + descriptor.getEndDate().toString() );
-//		} else {
-//			description.append( "\nNOT YET SCHEDULED \n");			
-//		}
-//		
-//		
-//		description.append(
-//						"\nDeployment Request by user :" + descriptor.getOwner().getUsername() 
-//						+"\nHere are the details:\n"
-//						+ "\nExperiment name: " + descriptor.getName() 
-//						+ "\nDescription: " + descriptor.getDescription() 
-//						+ "\nDate Created: " + descriptor.getDateCreated().toString() 
-//						+ "\nRequested Tentative Start date: " + descriptor.getStartReqDate().toString() 
-//						+ "\nRequested Tentative End date: " + descriptor.getEndReqDate().toString() 
-//						+ "\nExperiment (NSD) requested: " + descriptor.getExperiment().getName() );
-//		
-//		
-//		if ( descriptor.getMentor() != null ) {
-//			description.append( "\nMentor: " + descriptor.getMentor().getName() + ", " + descriptor.getMentor().getOrganization() ) ;
-//		}
-//		
-//
-//		description.append( "\nConstituent VxF Placement " ) ;
-//		for (DeploymentDescriptorVxFPlacement pl : descriptor.getVxfPlacements()) {
-//			if (  ( pl.getConstituentVxF().getVxfref() != null ) && ( pl.getInfrastructure() != null )) {
-//				description.append( "\n  Constituent VxF: " + pl.getConstituentVxF().getVxfref().getName() + " - Infrastructure: " + pl.getInfrastructure().getName() );
-//			}
-//		}
+		//description.append( "\n" + so.toString() + "\n");
+		
+
+		description.append( "\n Order id: " + so.getId()  );
+		description.append( "\n State: " + so.getState().name()   );
+		description.append( "\n Order Date: " + so.getOrderDate()   );
+		description.append( "\n Requested Start Date: " + so.getRequestedStartDateString()  );
+		description.append( "\n Requested Completion Date: " + so.getRequestedCompletionDateString()   );
+		description.append( "\n Start Date: " + so.getStartDateString()   );
+		description.append( "\n Expected Completion Date: " + so.getExpectedCompletionDateString()   );
+		
+
+		description.append( "\n Parties:");
+		for (RelatedParty rp : so.getRelatedParty()) {
+			description.append( "\n - " + rp.getRole()  + ", " + rp.getName()  );				
+		}
+		
+		description.append( "\n Notes:");
+		for (Note note : so.getNote()) {
+			description.append( "\n - " + note.getAuthor() + "@" + note.getDateString() + ": " + note.getText()  );			
+		}
+		description.append( "\n ");
+
+		description.append( "\n Order Items:");
+		for (ServiceOrderItem soi : so.getOrderItem()) {
+			description.append( "\n\t ************************************"  );
+			description.append( "\n\t Order Item: " + soi.getId()  );
+			description.append( "\n\t Action: " + soi.getAction()  );
+			description.append( "\n\t State: " + soi.getState()  );
+			description.append( "\n\t ** Service Details **"  );
+			description.append( "\n\t - Service Specification Name: " + soi.getService().getServiceSpecification().getName()  );
+			description.append( "\n\t - Service Specification Version: " + soi.getService().getServiceSpecification().getVersion()  );
+			description.append( "\n\t - Service State: " + soi.getService().getState()   );
+			description.append( "\n\t - Service Name: " + soi.getService().getName()    );
+			description.append( "\n\t - Characteristics"   );
+			for (Characteristic c : soi.getService().getServiceCharacteristic()) {
+				description.append( "\n\t\t - " + c.getName()   );
+				description.append( "\n\t\t   " + c.getValue().getValue()  + " (" + c.getValue().getAlias() + ")"  );
+			}
+
+			description.append( "\n\t - SupportingServices"   );
+			for (ServiceRef c : soi.getService().getSupportingService() ) {
+				description.append( "\n\t\t - " + c.getName()   );
+			}
+		}
 		
 		
 				
