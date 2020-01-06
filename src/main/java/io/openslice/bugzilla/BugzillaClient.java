@@ -849,8 +849,11 @@ public class BugzillaClient {
 			resolution = "INVALID";
 		}
 		
-		RelatedParty pr = so.getOrderRequester();
+		RelatedParty rp = so.getOrderRequester();
 		String email = "tranoris@ece.upatras.gr";
+		if ( rp.getExtendedInfo() !=null ) {
+			email  =rp.getExtendedInfo();
+		}
 		Bug b = createBug(product, component, summary, alias, description, email, status, resolution);
 				
 		return b;
@@ -878,7 +881,7 @@ public class BugzillaClient {
 
 		description.append( "\n Parties:");
 		for (RelatedParty rp : so.getRelatedParty()) {
-			description.append( "\n - " + rp.getRole()  + ", " + rp.getName()  );				
+			description.append( "\n - " + rp.getRole()  + ", " + rp.getName()  + ", " + rp.getExtendedInfo()  );				
 		}
 		
 		description.append( "\n Notes:");
