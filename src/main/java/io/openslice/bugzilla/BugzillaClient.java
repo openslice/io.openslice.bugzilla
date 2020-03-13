@@ -765,7 +765,7 @@ public class BugzillaClient {
 		StringBuilder description =  new StringBuilder( "**************************************************************\n"
 				+ "THIS IS AN AUTOMATED ISSUE UPDATE CREATED BY PORTAL API.\n"
 				+ "**************************************************************\n"
-				+ " OSM5 COMMUNICATION ACTION FAILURE\n"
+				+ " OSM COMMUNICATION ACTION FAILURE\n"
 				+ "**************************************************************\n");
 
 		description.append( "\n\n "+ IMANOCommunicationStatus.getMessage());
@@ -785,7 +785,7 @@ public class BugzillaClient {
 		StringBuilder description =  new StringBuilder( "**************************************************************\n"
 				+ "THIS IS AN AUTOMATED ISSUE UPDATE CREATED BY PORTAL API.\n"
 				+ "**************************************************************\n"
-				+ " OSM5 COMMUNICATION ACTION RESTORED\n"
+				+ " OSM COMMUNICATION ACTION RESTORED\n"
 				+ "**************************************************************\n");
 
 		description.append( "\n\n "+ IMANOCommunicationStatus.getMessage());
