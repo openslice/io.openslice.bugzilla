@@ -177,24 +177,18 @@ public class BugzillaClient {
 		c.setIs_private( false );	
 		return c;
 	}
-	
-	public static PortalUser getPortalUser() {
-		PortalUser u  = new PortalUser();
-		u.setName("kokos");
-		u.setEmail("lalalkis");
-		return u;
-	}
+
 		
 	public static User transformUser2BugzillaUser( final PortalUser portalUser ){
 		
 		//PortalUser portalUser = portalRepositoryRef.getUserByID(portaluserid);
 		User u = new User();
 		u.setEmail( portalUser.getEmail()  );
-		u.setFullName( portalUser.getName() );
+		u.setFullName( portalUser.getFirstname() + "" + portalUser.getLastname() );
 		u.setPassword( UUID.randomUUID().toString() ); //no password. The user needs to reset it in the other system (e.g. Bugzilla)
 		
 
-		logger.info( "In : portaluser getName = " + portalUser.getName() );
+		logger.info( "In : portaluser getLastname = " + portalUser.getLastname() );
 		
 		
 		return u;
@@ -358,7 +352,7 @@ public class BugzillaClient {
 		
 		
 		if ( descriptor.getMentor() != null ) {
-			description.append( "\nMentor: " + descriptor.getMentor().getName() + ", " + descriptor.getMentor().getOrganization() ) ;
+			description.append( "\nMentor: " + descriptor.getMentor().getFirstname() + " " + descriptor.getMentor().getLastname() + ", " + descriptor.getMentor().getOrganization() ) ;
 		}
 		
 
