@@ -56,6 +56,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
 import io.openslice.bugzilla.model.Bug;
+import io.openslice.model.CompositeVxFOnBoardDescriptor;
 import io.openslice.tmf.so641.model.ServiceOrderCreateNotification;
 
 /**
@@ -290,6 +291,11 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 		.unmarshal().json( JsonLibrary.Jackson, io.openslice.model.VxFOnBoardedDescriptor.class, true)
 		.bean( BugzillaClient.class, "transformVxFAutomaticOnBoarding2BugBody")
 		.to("direct:bugzilla.newIssue");
+		
+		from("activemq:topic:vxf.onBoardByCompositeObj")
+		.unmarshal().json( JsonLibrary.Jackson, io.openslice.model.CompositeVxFOnBoardDescriptor.class, true)
+		.bean( BugzillaClient.class, "transformVxFAutomaticOnBoarding2BugBodyCompObj")		
+		.to("direct:bugzilla.newIssue");
 
 		/**
 		 * Create VxF OffBoard New Route
@@ -357,6 +363,15 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 		.bean( BugzillaClient.class, "transformNSDAutomaticOnBoarding2BugBody")
 		.to("direct:bugzilla.newIssue");
 
+		/**
+		 * Create NSD onboard New Route
+		 */
+		from("activemq:topic:nsd.onBoardByCompositeObj")
+		.log( "activemq:topic:nsd.onBoardByCompositeObj for ${body} !" )
+		.unmarshal().json( JsonLibrary.Jackson, io.openslice.model.CompositeExperimentOnBoardDescriptor.class, true)
+		.bean( BugzillaClient.class, "transformNSDAutomaticOnBoarding2BugBodyCompObj")
+		.to("direct:bugzilla.newIssue");
+		
 		/**
 		 * Create NSD offboard New Route
 		 */

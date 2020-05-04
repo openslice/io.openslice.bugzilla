@@ -44,6 +44,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.openslice.bugzilla.model.Bug;
 import io.openslice.bugzilla.model.Comment;
 import io.openslice.bugzilla.model.User;
+import io.openslice.model.CompositeExperimentOnBoardDescriptor;
+import io.openslice.model.CompositeVxFOnBoardDescriptor;
 import io.openslice.model.DeploymentDescriptor;
 import io.openslice.model.DeploymentDescriptorStatus;
 import io.openslice.model.DeploymentDescriptorVxFPlacement;
@@ -460,6 +462,10 @@ public class BugzillaClient {
 		
 		return b;
 	}
+
+	public Bug transformVxFAutomaticOnBoarding2BugBodyCompObj( final CompositeVxFOnBoardDescriptor compvxfobd ) {
+		return transformVxFAutomaticOnBoarding2BugBody( compvxfobd.getObd() );
+	}	
 	
 	public Bug transformVxFAutomaticOnBoarding2BugBody( final VxFOnBoardedDescriptor obd ) {
 		
@@ -573,8 +579,12 @@ public class BugzillaClient {
 		
 		return b;
 	}
+
+	public  Bug transformNSDAutomaticOnBoarding2BugBodyCompObj(CompositeExperimentOnBoardDescriptor compoexpobd ) {
+		return transformNSDAutomaticOnBoarding2BugBody(compoexpobd.getObd() );
+	}	
 	
-	public  Bug transformNSDAutomaticOnBoarding2BugBody( ExperimentOnBoardDescriptor obd ) {
+	public  Bug transformNSDAutomaticOnBoarding2BugBody(ExperimentOnBoardDescriptor obd ) {
 		
 		ExperimentOnBoardDescriptor uexpobd = obd;
 		
