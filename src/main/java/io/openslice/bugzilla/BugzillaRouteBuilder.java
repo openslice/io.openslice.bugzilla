@@ -57,6 +57,7 @@ import org.springframework.stereotype.Component;
 
 import io.openslice.bugzilla.model.Bug;
 import io.openslice.model.CompositeVxFOnBoardDescriptor;
+import io.openslice.tmf.pm632.model.IndividualCreateEvent;
 import io.openslice.tmf.so641.model.ServiceOrderCreateNotification;
 
 /**
@@ -110,6 +111,10 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 	@Value("${EVENT_SERVICE_ATTRIBUTE_VALUE_CHANGED}")
 	private String EVENT_SERVICE_ATTRIBUTE_VALUE_CHANGED = "";
 
+	
+	@Value("${EVENT_INDIVIDUAL_CREATE}")
+	private String EVENT_INDIVIDUAL_CREATE = "";
+	
     @PostConstruct
     public void postConstruct() {
         // to validate if properties are loaded
@@ -206,7 +211,20 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 //		.to( "activemq:topic:users.create" );
 		
 		
+		/**
+		 * Create user route, from Individual event
+		 */
 		
+		
+
+		from( EVENT_INDIVIDUAL_CREATE )
+		.unmarshal().json( JsonLibrary.Jackson, IndividualCreateEvent.class, true)
+		.bean( BugzillaClient.class, "transformIndividual2BugzillaUser")
+		.marshal().json( JsonLibrary.Jackson,  true)
+		.convertBodyTo( String.class ).to("stream:out")
+		.setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.POST))
+		.toD( "https4://" + BUGZILLAURL + "/rest.cgi/user?api_key="+ BUGZILLAKEY +"&throwExceptionOnFailure=true")
+		.to("stream:out");
 		
 
 		/**

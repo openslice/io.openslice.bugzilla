@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import javax.validation.Valid;
+
 import org.apache.camel.CamelContext;
 import org.apache.camel.FluentProducerTemplate;
 import org.apache.camel.ProducerTemplate;
@@ -63,6 +65,9 @@ import io.openslice.tmf.common.model.Notification;
 import io.openslice.tmf.common.model.service.Characteristic;
 import io.openslice.tmf.common.model.service.Note;
 import io.openslice.tmf.common.model.service.ServiceRef;
+import io.openslice.tmf.pm632.model.ContactMedium;
+import io.openslice.tmf.pm632.model.Individual;
+import io.openslice.tmf.pm632.model.IndividualCreateEvent;
 import io.openslice.tmf.prm669.model.RelatedParty;
 import io.openslice.tmf.so641.model.ServiceOrder;
 import io.openslice.tmf.so641.model.ServiceOrderAttributeValueChangeNotification;
@@ -191,6 +196,31 @@ public class BugzillaClient {
 		
 
 		logger.info( "In : portaluser getLastname = " + portalUser.getLastname() );
+		
+		
+		return u;
+		
+	}
+	
+	
+	public static User transformIndividual2BugzillaUser( final IndividualCreateEvent individualCreateEvent ){
+		
+		@Valid
+		Individual indv = individualCreateEvent.getEvent().getIndividual();
+		//PortalUser portalUser = portalRepositoryRef.getUserByID(portaluserid);
+		User u = new User();
+		
+		for (ContactMedium cm : indv.getContactMedium() ) {
+			if ( cm.getCharacteristic().getEmailAddress()!=null ) {
+				u.setEmail( cm.getCharacteristic().getEmailAddress());				
+			}
+		}
+		
+		u.setFullName( indv.getFullName() + "" + indv.getFamilyName() );
+		u.setPassword( UUID.randomUUID().toString() ); //no password. The user needs to reset it in the other system (e.g. Bugzilla)
+		
+
+		logger.info( "In : Individual getFamilyName = " + indv.getFamilyName() + " email: " + u.getEmail());
 		
 		
 		return u;
