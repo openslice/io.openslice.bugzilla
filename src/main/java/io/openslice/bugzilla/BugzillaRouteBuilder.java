@@ -140,7 +140,9 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 
 		String usedBUGZILLAURL = "https4://" + BUGZILLAURL;
 		if ( BUGZILLAURL.contains("http:")) {
-			usedBUGZILLAURL = "http4://" + BUGZILLAURL;
+			usedBUGZILLAURL = BUGZILLAURL;
+		} else if ( BUGZILLAURL.contains("https:")) {
+			usedBUGZILLAURL = BUGZILLAURL.replace("https", "https4");
 		}
 		
 		/**
