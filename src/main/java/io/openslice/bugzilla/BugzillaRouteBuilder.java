@@ -138,6 +138,11 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 		HttpComponent httpComponent = getContext().getComponent("https4", HttpComponent.class);
 		httpComponent.setHttpClientConfigurer(new MyHttpClientConfigurer());
 
+		String usedBUGZILLAURL = "https4://" + BUGZILLAURL;
+		if ( BUGZILLAURL.contains("http:")) {
+			usedBUGZILLAURL = "http4://" + BUGZILLAURL;
+		}
+		
 		/**
 		 * Create New Issue in Bugzilla. The body is a {@link Bug}
 		 */
@@ -154,7 +159,7 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 				//.retriesExhaustedLogLevel(LoggingLevel.WARN)
 				.retryAttemptedLogLevel( LoggingLevel.WARN) )
 		.setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.POST))
-		.toD( "https4://" + BUGZILLAURL + "/rest.cgi/bug?api_key="+ BUGZILLAKEY +"&throwExceptionOnFailure=true")
+		.toD( usedBUGZILLAURL + "/rest.cgi/bug?api_key="+ BUGZILLAKEY +"&throwExceptionOnFailure=true")
 		.to("log:DEBUG?showBody=true&showHeaders=true")
 		.to("stream:out");
 		
@@ -174,7 +179,7 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 				//.retriesExhaustedLogLevel(LoggingLevel.WARN)
 				.retryAttemptedLogLevel( LoggingLevel.WARN) )
 		.setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.PUT))
-		.toD( "https4://" + BUGZILLAURL + "/rest.cgi/bug/${header.uuid}?api_key="+ BUGZILLAKEY +"&throwExceptionOnFailure=true")
+		.toD( usedBUGZILLAURL + "/rest.cgi/bug/${header.uuid}?api_key="+ BUGZILLAKEY +"&throwExceptionOnFailure=true")
 		.to("log:DEBUG?showBody=true&showHeaders=true")
 		.to("stream:out");
 		
@@ -200,7 +205,7 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 //				//.retriesExhaustedLogLevel(LoggingLevel.WARN)
 //				.retryAttemptedLogLevel( LoggingLevel.WARN) )
 		.setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.POST))
-		.toD( "https4://" + BUGZILLAURL + "/rest.cgi/user?api_key="+ BUGZILLAKEY +"&throwExceptionOnFailure=true")
+		.toD( usedBUGZILLAURL + "/rest.cgi/user?api_key="+ BUGZILLAKEY +"&throwExceptionOnFailure=true")
 		.to("stream:out");
 		
 		
@@ -223,7 +228,7 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 		.marshal().json( JsonLibrary.Jackson,  true)
 		.convertBodyTo( String.class ).to("stream:out")
 		.setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.POST))
-		.toD( "https4://" + BUGZILLAURL + "/rest.cgi/user?api_key="+ BUGZILLAKEY +"&throwExceptionOnFailure=true")
+		.toD( usedBUGZILLAURL + "/rest.cgi/user?api_key="+ BUGZILLAKEY +"&throwExceptionOnFailure=true")
 		.to("stream:out");
 		
 
@@ -540,7 +545,7 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 
 		from("direct:issue.get")
 		.setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.GET))
-		.toD( "https4://" + BUGZILLAURL + "/rest.cgi/bug/${header.uuid}?api_key="+ BUGZILLAKEY +"&throwExceptionOnFailure=true");
+		.toD( usedBUGZILLAURL + "/rest.cgi/bug/${header.uuid}?api_key="+ BUGZILLAKEY +"&throwExceptionOnFailure=true");
 		
 		
 		/**
