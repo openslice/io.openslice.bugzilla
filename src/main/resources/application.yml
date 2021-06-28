@@ -58,6 +58,8 @@ spring:
     pool:
       enabled: true
       max-connections: 100
+    packages:
+      trust-all: true
       
 portaltitle: "openslice"
 maindomain: "http://localhost:13000"
