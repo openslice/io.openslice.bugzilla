@@ -37,8 +37,8 @@ import org.apache.camel.LoggingLevel;
 import org.apache.camel.Predicate;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.component.http4.HttpClientConfigurer;
-import org.apache.camel.component.http4.HttpComponent;
+import org.apache.camel.component.http.HttpClientConfigurer;
+import org.apache.camel.component.http.HttpComponent;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -58,7 +58,10 @@ import org.springframework.stereotype.Component;
 import io.openslice.bugzilla.model.Bug;
 import io.openslice.model.CompositeVxFOnBoardDescriptor;
 import io.openslice.tmf.pm632.model.IndividualCreateEvent;
+import io.openslice.tmf.so641.model.ServiceOrderAttributeValueChangeNotification;
 import io.openslice.tmf.so641.model.ServiceOrderCreateNotification;
+import io.openslice.tmf.so641.model.ServiceOrderDeleteNotification;
+import io.openslice.tmf.so641.model.ServiceOrderStateChangeNotification;
 
 /**
  * @author ctranoris
@@ -135,14 +138,14 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 //		}
 //		
 
-		HttpComponent httpComponent = getContext().getComponent("https4", HttpComponent.class);
+		HttpComponent httpComponent = getContext().getComponent("https", HttpComponent.class);
 		httpComponent.setHttpClientConfigurer(new MyHttpClientConfigurer());
 
-		String usedBUGZILLAURL = "https4://" + BUGZILLAURL;
+		String usedBUGZILLAURL = "https://" + BUGZILLAURL;
 		if ( BUGZILLAURL.contains("http:")) {
 			usedBUGZILLAURL = BUGZILLAURL;
 		} else if ( BUGZILLAURL.contains("https:")) {
-			usedBUGZILLAURL = BUGZILLAURL.replace("https", "https4");
+			usedBUGZILLAURL = BUGZILLAURL.replace("https", "https");
 		}
 		
 		/**
@@ -151,16 +154,16 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 		from("direct:bugzilla.newIssue")
 		.marshal().json( JsonLibrary.Jackson, true)
 		.convertBodyTo( String.class ).to("stream:out")
-		.errorHandler(deadLetterChannel("direct:dlq_bugzilla")
-				.maximumRedeliveries( 4 ) //let's try for the next 120 mins to send it....
-				.redeliveryDelay( 60000 ).useOriginalMessage()
-				.deadLetterHandleNewException( false )
-				//.logExhaustedMessageHistory(false)
-				.logExhausted(true)
-				.logHandled(true)
-				//.retriesExhaustedLogLevel(LoggingLevel.WARN)
-				.retryAttemptedLogLevel( LoggingLevel.WARN) )
-		.setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.POST))
+//		.errorHandler(deadLetterChannel("direct:dlq_bugzilla")
+//				.maximumRedeliveries( 4 ) //let's try for the next 120 mins to send it....
+//				.redeliveryDelay( 60000 ).useOriginalMessage()
+//				.deadLetterHandleNewException( false )
+//				//.logExhaustedMessageHistory(false)
+//				.logExhausted(true)
+//				.logHandled(true)
+//				//.retriesExhaustedLogLevel(LoggingLevel.WARN)
+//				.retryAttemptedLogLevel( LoggingLevel.WARN) )
+		.setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http.HttpMethods.POST))
 		.toD( usedBUGZILLAURL + "/rest.cgi/bug?api_key="+ BUGZILLAKEY +"&throwExceptionOnFailure=true")
 		.to("log:DEBUG?showBody=true&showHeaders=true")
 		.to("stream:out");
@@ -180,7 +183,7 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 				.logHandled(true)
 				//.retriesExhaustedLogLevel(LoggingLevel.WARN)
 				.retryAttemptedLogLevel( LoggingLevel.WARN) )
-		.setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.PUT))
+		.setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http.HttpMethods.PUT))
 		.toD( usedBUGZILLAURL + "/rest.cgi/bug/${header.uuid}?api_key="+ BUGZILLAKEY +"&throwExceptionOnFailure=true")
 		.to("log:DEBUG?showBody=true&showHeaders=true")
 		.to("stream:out");
@@ -206,7 +209,7 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 //				.logHandled(true)
 //				//.retriesExhaustedLogLevel(LoggingLevel.WARN)
 //				.retryAttemptedLogLevel( LoggingLevel.WARN) )
-		.setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.POST))
+		.setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http.HttpMethods.POST))
 		.toD( usedBUGZILLAURL + "/rest.cgi/user?api_key="+ BUGZILLAKEY +"&throwExceptionOnFailure=true")
 		.to("stream:out");
 		
@@ -229,7 +232,7 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 		.bean( BugzillaClient.class, "transformIndividual2BugzillaUser")
 		.marshal().json( JsonLibrary.Jackson,  true)
 		.convertBodyTo( String.class ).to("stream:out")
-		.setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.POST))
+		.setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http.HttpMethods.POST))
 		.toD( usedBUGZILLAURL + "/rest.cgi/user?api_key="+ BUGZILLAKEY +"&throwExceptionOnFailure=true")
 		.to("stream:out");
 		
@@ -283,17 +286,17 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 		.to("direct:bugzilla.newIssue");
 
 		from( EVENT_SERVICE_ORDER_ATTRIBUTE_VALUE_CHANGED )
-		.unmarshal().json( JsonLibrary.Jackson, ServiceOrderCreateNotification.class, true)
+		.unmarshal().json( JsonLibrary.Jackson, ServiceOrderAttributeValueChangeNotification.class, true)
 		.bean( BugzillaClient.class, "transformNotification2BugBody")
 		.to("direct:bugzilla.bugmanage");
 		
 		from( EVENT_SERVICE_ORDER_DELETE )
-		.unmarshal().json( JsonLibrary.Jackson, ServiceOrderCreateNotification.class, true)
+		.unmarshal().json( JsonLibrary.Jackson, ServiceOrderDeleteNotification.class, true)
 		.bean( BugzillaClient.class, "transformNotification2BugBody")
 		.to("direct:bugzilla.bugmanage");
 		
 		from( EVENT_SERVICE_ORDER_STATE_CHANGED )
-		.unmarshal().json( JsonLibrary.Jackson, ServiceOrderCreateNotification.class, true)
+		.unmarshal().json( JsonLibrary.Jackson, ServiceOrderStateChangeNotification.class, true)
 		.bean( BugzillaClient.class, "transformNotification2BugBody")
 		.to("direct:bugzilla.bugmanage");
 
@@ -546,7 +549,7 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 		.to("direct:bugzilla.bugmanage");		
 
 		from("direct:issue.get")
-		.setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http4.HttpMethods.GET))
+		.setHeader(Exchange.HTTP_METHOD, constant(org.apache.camel.component.http.HttpMethods.GET))
 		.toD( usedBUGZILLAURL + "/rest.cgi/bug/${header.uuid}?api_key="+ BUGZILLAKEY +"&throwExceptionOnFailure=true");
 		
 		
