@@ -23,8 +23,10 @@ package io.openslice.bugzilla;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
@@ -919,8 +921,17 @@ public class BugzillaClient {
 		}
 		
 		description.append( "\n Notes:");
-		for (Note note : so.getNote()) {
-			description.append( "\n - " + note.getAuthor() + "@" + note.getDateString() + ": " + note.getText()  );			
+		
+		
+		 //Convert a Stream to List
+        List<Note> notes = so.getNote()
+        		.stream()
+        		.sorted( Comparator.comparing(Note::getDate , Comparator.nullsLast(Comparator.reverseOrder())) )
+        		.collect(Collectors.toList());
+		
+		for (Note note : notes) {
+			description.append( "\n - " + note.getDateString() +" [" + note.getAuthor() + "]:" );		
+			description.append( "\n   " + note.getText()  );			
 		}
 		description.append( "\n ");
 
