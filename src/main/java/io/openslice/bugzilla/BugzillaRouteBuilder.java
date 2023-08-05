@@ -22,13 +22,14 @@
 package io.openslice.bugzilla;
 
 
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import org.apache.camel.CamelExecutionException;
 import org.apache.camel.Exchange;
@@ -42,26 +43,26 @@ import org.apache.camel.component.http.HttpComponent;
 import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.config.Registry;
-import org.apache.http.config.RegistryBuilder;
-import org.apache.http.conn.HttpClientConnectionManager;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
-import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.io.HttpClientConnectionManager;
+import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
+import org.apache.hc.client5.http.socket.PlainConnectionSocketFactory;
+import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
+import org.apache.hc.core5.http.config.Registry;
+import org.apache.hc.core5.http.config.RegistryBuilder;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
 import io.openslice.bugzilla.model.Bug;
-import io.openslice.model.CompositeVxFOnBoardDescriptor;
 import io.openslice.tmf.pm632.model.IndividualCreateEvent;
 import io.openslice.tmf.so641.model.ServiceOrderAttributeValueChangeNotification;
 import io.openslice.tmf.so641.model.ServiceOrderCreateNotification;
 import io.openslice.tmf.so641.model.ServiceOrderDeleteNotification;
 import io.openslice.tmf.so641.model.ServiceOrderStateChangeNotification;
+import jakarta.annotation.PostConstruct;
 
 /**
  * @author ctranoris
@@ -72,7 +73,6 @@ import io.openslice.tmf.so641.model.ServiceOrderStateChangeNotification;
  *
  */
 @Configuration
-@RefreshScope
 @Component
 public class BugzillaRouteBuilder extends RouteBuilder {
 	
@@ -127,6 +127,22 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 
 	private static final transient Log logger = LogFactory.getLog( BugzillaRouteBuilder.class.getName() );
 	
+	private static final TrustManager[] DUMMY_TRUST_MANAGERS = new TrustManager[] { new X509TrustManager() {
+		@Override
+		public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+		}
+
+		@Override
+		public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+		}
+
+		@Override
+		public X509Certificate[] getAcceptedIssuers() {
+			return new X509Certificate[] {};
+		}
+
+	} };
+	
 	public void configure() {
 
 		
@@ -177,7 +193,7 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 		.errorHandler(deadLetterChannel("direct:dlq_bugzilla")
 				.maximumRedeliveries( 4 ) //let's try for the next 120 minutess to send it....
 				.redeliveryDelay( 60000 ).useOriginalMessage()
-				.deadLetterHandleNewException( false )
+//				.deadLetterHandleNewException( false )
 				//.logExhaustedMessageHistory(false)
 				.logExhausted(true)
 				.logHandled(true)
@@ -599,7 +615,7 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 			Map<String, Object> headers = exchange.getIn().getHeaders(); 
 			Bug aBug = exchange.getIn().getBody( Bug.class ); 
 		    headers.put("uuid", aBug.getAliasFirst()  );
-		    exchange.getOut().setHeaders(headers);
+		    exchange.getMessage().setHeaders(headers);
 		    
 		    //copy Description to Comment
 		    aBug.setComment( BugzillaClient.createComment( aBug.getDescription() ) );
@@ -608,7 +624,7 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 		    aBug.setAlias( null ); //dont put any Alias		
 		    aBug.setCc( null );
 		    
-		    exchange.getOut().setBody( aBug  );
+		    exchange.getMessage().setBody( aBug  );
 		    // copy attachements from IN to OUT to propagate them
 		    //exchange.getOut().setAttachments(exchange.getIn().getAttachments());
 			
@@ -623,31 +639,31 @@ public class BugzillaRouteBuilder extends RouteBuilder {
 
 		@Override
 		public void configureHttpClient(HttpClientBuilder hc) {
-			try {
-				SSLContext sslContext;
-				sslContext = new SSLContextBuilder().loadTrustMaterial(null, (certificate, authType) -> true).build();
 
-				//hc.setSSLContext(sslContext).setSSLHostnameVerifier(new NoopHostnameVerifier()).build();
-
-				SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory( sslContext, SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-				hc.setSSLSocketFactory(sslConnectionFactory);
-				Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
-				        .register("https", sslConnectionFactory)
-				        .build();
-
-				HttpClientConnectionManager ccm = new BasicHttpClientConnectionManager(registry);
-
+				HttpClientConnectionManager ccm = new PoolingHttpClientConnectionManager( createRegistry()  );
 				hc.setConnectionManager(ccm);
 
-			} catch (KeyManagementException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (NoSuchAlgorithmException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (KeyStoreException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+		
+		}
+
+		
+		private Registry<ConnectionSocketFactory> createRegistry() {
+
+			RegistryBuilder<ConnectionSocketFactory> registryBuilder = RegistryBuilder.<ConnectionSocketFactory>create();
+			try {
+//				HostnameVerifier hostnameVerifier = getVerifyHostName() ? new DefaultHostnameVerifier()
+//						: NoopHostnameVerifier.INSTANCE;
+				HostnameVerifier hostnameVerifier =  NoopHostnameVerifier.INSTANCE;
+				var ssl = SSLContext.getInstance("TLS");
+				ssl.init(null, DUMMY_TRUST_MANAGERS, null);
+				SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(ssl.getSocketFactory(),
+						hostnameVerifier);
+				registryBuilder.register("https", sslConnectionFactory);
+				registryBuilder.register("http", PlainConnectionSocketFactory.INSTANCE);
+
+				return registryBuilder.build();
+			} catch (Exception e) {
+				throw new IllegalStateException("Failure trying to create scheme registry", e);
 			}
 		}
 

@@ -13,43 +13,20 @@ server:
 logging:
   level:
     root: INFO
-    org.springframework.cloud.consul: INFO
+    org.springframework: INFO
     org.apache.camel.zipkin: INFO
     org.apache.camel.spring.cloud: INFO
     org.apache.camel: INFO
     
-# Camel Service Call
-camel:
-  cloud:
-    service-call.component: undertow
-  zipkin:
-    endpoint: http://localhost:9411/api/v2/spans
-    server-service-mappings.[*]: bugzilla-client-service
-    client-service-mappings.[*]: bugzilla-client-service
-    include-message-body-streams: false
-    
+
     
 spring:
-  profiles: default
+  config:
+    activate:
+      on-profile: "default"
   application:
     name: bugzilla-client-service
-  cloud:
-    consul:
-      enabled: true
-      host: http://localhost
-      port: 8500
-      config:
-        enabled: true
-        prefix: config
-        defaultContext: openslice
-        data-key: osdata
-        profileSeparator: '::'
-        format: yaml
-      discovery:        
-        tags: openslice-microservice
-        enabled: true
-        instanceId: ${spring.application.name}:${vcap.application.instance_id:${spring.application.instance_id:${random.value}}}
-        healthCheckInterval: 120s
+
       
   activemq:
     brokerUrl: tcp://localhost:61616

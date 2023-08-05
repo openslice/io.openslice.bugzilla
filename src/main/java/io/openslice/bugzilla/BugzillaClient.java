@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.validation.Valid;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.FluentProducerTemplate;
@@ -37,7 +36,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
@@ -78,6 +76,7 @@ import io.openslice.tmf.so641.model.ServiceOrderDeleteNotification;
 import io.openslice.tmf.so641.model.ServiceOrderItem;
 import io.openslice.tmf.so641.model.ServiceOrderStateChangeNotification;
 import io.openslice.tmf.so641.model.ServiceOrderStateType;
+import jakarta.validation.Valid;
 
 
 
@@ -86,7 +85,6 @@ import io.openslice.tmf.so641.model.ServiceOrderStateType;
  *
  */
 @Configuration
-@RefreshScope
 public class BugzillaClient {
 
 	private static final transient Log logger = LogFactory.getLog(BugzillaClient.class.getName());
